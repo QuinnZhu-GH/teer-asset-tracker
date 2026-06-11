@@ -73,60 +73,60 @@
     backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
   }
 
-  /* 红色系极简 - 全部清晰可辨 */
-  .region-hd1 { /* 华东一区 */
-    --rc-bg: #fafafa; --rc-text: #1a1a1a; --rc-accent: #991b1b; --rc-light: #f5f5f5;
-    --rc-border: #e5e5e5; --rc-glow: rgba(153,27,27,0.04);
+  /* 红色系 - 粗色条 + 可见底色 */
+  .region-hd1 {
+    --rc-bg: #fff0f0; --rc-text: #7f1d1d; --rc-accent: #991b1b; --rc-light: #fee2e2;
+    --rc-border: #fca5a5; --rc-glow: none;
   }
-  .region-hd1 .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:800; }
+  .region-hd1 .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; }
   .region-hd1 .region-header::after { background: var(--rc-border); }
-  .region-hd1 .rh-count { background: #f0f0f0; color: #444; font-weight:700; }
-  .region-hd1 { border-left: 3.5px solid #991b1b; box-shadow: none; }
+  .region-hd1 .rh-count { background: var(--rc-light); color: var(--rc-accent); font-weight:800; border-radius:20px;padding:3px 12px;}
+  .region-hd1 { border-left: 5px solid #991b1b; box-shadow: none; }
 
-  .region-hd2 { /* 华东二区 */
-    --rc-bg: #fef2f2; --rc-text: #262626; --rc-accent: #a82828; --rc-light: #fee5e5;
-    --rc-border: #e8d5d5; --rc-glow: rgba(168,40,40,0.04);
+  .region-hd2 {
+    --rc-bg: #fef2f2; --rc-text: #991b1b; --rc-accent: #b91c1c; --rc-light: #fecaca;
+    --rc-border: #f87171; --rc-glow: none;
   }
-  .region-hd2 .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:800; }
-  .region-hd2 .region-header::after { background: var(--rc-border); opacity:0.5; }
-  .region-hd2 .rh-count { background: #fce8e8; color: #7a2020; font-weight:700; }
-  .region-hd2 { border-left: 3.5px solid #a82828; box-shadow: none; }
+  .region-hd2 .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; }
+  .region-hd2 .region-header::after { background: var(--rc-border); opacity:0.4; }
+  .region-hd2 .rh-count { background: var(--rc-light); color: #991b1b; font-weight:800;border-radius:20px;padding:3px 12px;}
+  .region-hd2 { border-left: 5px solid #b91c1c; box-shadow: none; }
 
-  .region-hz { /* 华中区 */
-    --rc-bg: #fff0f0; --rc-text: #404040; --rc-accent: #c0392b; --rc-light: #fecaca;
-    --rc-border: #e0bfbf; --rc-glow: rgba(192,57,43,0.05);
+  .region-hz {
+    --rc-bg: #ffe4e4; --rc-text: #a82828; --rc-accent: #dc2626; --rc-light: #fecdd6;
+    --rc-border: #ef9a9a; --rc-glow: none;
   }
-  .region-hz .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:800; letter-spacing:0.3px;}
-  .region-hz .region-header::after { background: var(--rc-border); opacity:0.4; }
-  .region-hz .rh-count { background: #fddddd; color: #922b21; font-weight:700; }
-  .region-hz { border-left: 3.5px solid #c0392b; box-shadow: none; }
+  .region-hz .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; letter-spacing:0.5px;}
+  .region-hz .region-header::after { background: var(--rc-border); opacity:0.35; }
+  .region-hz .rh-count { background: #fff; color: #dc2626; font-weight:800;border-radius:20px;padding:3px 12px;}
+  .region-hz { border-left: 5px solid #dc2626; box-shadow: none; }
 
-  .region-hb { /* 华北区 */
-    --rc-bg: #fff1f1; --rc-text: #525252; --rc-accent: #dc2626; --rc-light: #fee2e2;
-    --rc-border: #efc5c5; --rc-glow: rgba(220,38,38,0.05);
+  .region-hb {
+    --rc-bg: #ffeded; --rc-text: #b91c1c; --rc-accent: #ef4444; --rc-light: #fed7d7;
+    --rc-border: #fca5a5; --rc-glow: none;
   }
-  .region-hb .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:800; letter-spacing:0.3px;}
-  .region-hb .region-header::after { background: var(--rc-border); opacity:0.35; }
-  .region-hb .rh-count { background: #fedede; color: #b91c1c; font-weight:700; }
-  .region-hb { border-left: 3.5px solid #dc2626; box-shadow: none; }
+  .region-hb .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; letter-spacing:0.5px;}
+  .region-hb .region-header::after { background: var(--rc-border); opacity:0.3; }
+  .region-hb .rh-count { background: #fff; color: #ef4444; font-weight:800;border-radius:20px;padding:3px 12px;}
+  .region-hb { border-left: 5px solid #ef4444; box-shadow: none; }
 
-  .region-hn { /* 华南区 */
-    --rc-bg: #fff5f5; --rc-text: #7f1d1d; --rc-accent: #ef4444; --rc-light: #ffe4e4;
-    --rc-border: #fbbaba; --rc-glow: rgba(239,68,68,0.06);
+  .region-hn {
+    --rc-bg: #ffecec; --rc-text: #dc2626; --rc-accent: #f87171; --rc-light: #fee5e5;
+    --rc-border: #fcc; --rc-glow: none;
   }
-  .region-hn .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; letter-spacing:0.3px; }
-  .region-hn .region-header::after { background: var(--rc-border); opacity:0.35; }
-  .region-hn .rh-count { background: #ffeded; color: #dc2626; font-weight:800; }
-  .region-hn { border-left: 3.5px solid #ef4444; box-shadow: none; }
+  .region-hn .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; letter-spacing:0.5px; }
+  .region-hn .region-header::after { background: var(--rc-border); opacity:0.25; }
+  .region-hn .rh-count { background: #fff; color: #dc2626; font-weight:900;border-radius:20px;padding:3px 14px;}
+  .region-hn { border-left: 5px solid #f87171; box-shadow: none; }
 
-  .region-xq { /* 西区 */
-    --rc-bg: #fffafa; --rc-text: #991b1b; --rc-accent: #f87171; --rc-light: #ffecec;
-    --rc-border: #fccaca; --rc-glow: rgba(248,113,113,0.06);
+  .region-xq {
+    --rc-bg: #fff5f5; --rc-text: #ef4444; --rc-accent: #fb7185; --rc-light: #ffe4e6;
+    --rc-border: #fda4af; --rc-glow: none;
   }
-  .region-xq .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; letter-spacing:0.3px; }
-  .region-xq .region-header::after { background: var(--rc-border); opacity:0.3; }
-  .region-xq .rh-count { background: #fff0f0; color: #ef4444; font-weight:800; }
-  .region-xq { border-left: 3.5px solid #f87171; box-shadow: none; }
+  .region-xq .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; letter-spacing:0.5px; }
+  .region-xq .region-header::after { background: var(--rc-border); opacity:0.25; }
+  .region-xq .rh-count { background: #fff; color: #f43f5e; font-weight:900;border-radius:20px;padding:3px 14px;}
+  .region-xq { border-left: 5px solid #fb7185; box-shadow: none; }
 
   .region-devices {
     padding: 10px 12px 12px;
