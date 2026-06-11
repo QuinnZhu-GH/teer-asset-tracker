@@ -144,6 +144,38 @@
   .tl-checker { font-size: 12px; color: #718096; margin-top: 2px; }
   .tl-status { margin-top: 4px; }
 
+  /* 检查记录管理 */
+  .records-container { padding: 12px 16px 24px; }
+  .record-card {
+    background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06); position: relative;
+  }
+  .record-card .record-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+  }
+  .record-card .record-time { font-size: 14px; font-weight: 600; color: #1a202c; }
+  .record-card .record-checker { font-size: 12px; color: #718096; }
+  .record-card .record-actions { display: flex; gap: 6px; }
+  .record-card .record-actions button {
+    border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px;
+    font-weight: 500; cursor: pointer; font-family: inherit;
+  }
+  .record-card .btn-edit { background: #ebf4ff; color: #3182ce; }
+  .record-card .btn-delete { background: #fff5f5; color: #e53e3e; }
+  .record-card .record-body { font-size: 13px; color: #4a5568; line-height: 1.8; }
+  .record-card .record-body .record-field { display: flex; justify-content: space-between; }
+  .record-card .record-body .record-field-label { color: #718096; flex-shrink: 0; }
+  .record-card .record-body .record-field-value { color: #1a202c; text-align: right; }
+  .record-card .record-note { margin-top: 8px; padding: 8px; background: #f7fafc; border-radius: 8px; font-size: 12px; color: #4a5568; }
+  .edit-field { margin-bottom: 14px; }
+  .edit-field label { display: block; font-size: 13px; color: #718096; margin-bottom: 4px; font-weight: 500; }
+  .edit-field input, .edit-field textarea, .edit-field select {
+    width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 10px;
+    font-size: 14px; font-family: inherit; background: white; box-sizing: border-box;
+  }
+  .edit-field input:focus, .edit-field textarea:focus { border-color: #667eea; outline: none; }
+  .edit-field textarea { height: 60px; resize: vertical; }
+
   /* 媒体 */
   .media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
   .media-thumb {
@@ -443,6 +475,7 @@
       <div class="media-grid" id="d-media"></div>
     </div>
     <button class="submit-btn" id="btn-check" style="margin:12px 0 0 0" onclick="goToCheckForm()">📝 发起新检查</button>
+    <button class="submit-btn" id="btn-records" style="margin:8px 0 0 0;background:linear-gradient(135deg,#5a67d8,#667eea);box-shadow:0 4px 14px rgba(90,103,216,0.35)" onclick="openRecordsPage()">📋 检查记录管理</button>
     <button class="submit-btn" id="btn-qr" style="margin:8px 0 12px 0;background:linear-gradient(135deg,#276749,#38a169);box-shadow:0 4px 14px rgba(39,103,73,0.35)" onclick="showQRModal(currentDevice)">🔲 查看/打印二维码</button>
   </div>
 </div>
@@ -523,6 +556,16 @@
   <div style="height:32px"></div>
 </div>
 
+<!-- ===== 页面4：检查记录管理 ===== -->
+<div id="page-records" class="page">
+  <div class="detail-header" id="records-header">
+    <button class="back-btn" onclick="goBack('page-detail')">← 返回详情</button>
+    <div class="detail-device-name" id="records-device-name"></div>
+    <div class="detail-device-id" id="records-device-id"></div>
+  </div>
+  <div id="records-list" class="records-container"></div>
+</div>
+
 <div class="success-overlay" id="success-overlay">
   <div class="success-card">
     <div class="success-icon">✅</div>
@@ -546,6 +589,35 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- 编辑记录模态框 -->
+<div class="modal-overlay" id="edit-record-modal" onclick="closeEditRecordModal(event)">
+  <div class="modal-sheet" style="max-height:85vh;overflow-y:auto">
+    <div class="modal-handle"></div>
+    <div class="modal-title">编辑检查记录</div>
+    <div id="edit-record-form" style="padding:0 4px"></div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeEditRecordModal()">取消</button>
+      <button class="modal-btn primary" onclick="saveEditRecord()">保存修改</button>
+    </div>
+  </div>
+</div>
+
+<!-- 删除确认模态框 -->
+<div class="modal-overlay" id="delete-confirm-modal" onclick="closeDeleteModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="text-align:center;padding:16px 0">
+      <div style="font-size:40px;margin-bottom:12px">⚠️</div>
+      <div style="font-size:16px;font-weight:600;color:#1a202c;margin-bottom:8px">确认删除此检查记录？</div>
+      <div style="font-size:13px;color:#718096" id="delete-record-info"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeDeleteModal()">取消</button>
+      <button class="modal-btn" style="background:#e53e3e;color:white" onclick="confirmDeleteRecord()">确认删除</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
@@ -1380,6 +1452,196 @@ async function submitCheck() {
 function afterSubmit() {
   document.getElementById("success-overlay").classList.remove("show");
   openDetail(currentDevice.id);
+}
+
+// ============================================================
+// 检查记录管理
+// ============================================================
+let editingRecordIndex = -1;
+let deletingRecordIndex = -1;
+
+function openRecordsPage() {
+  if (!currentDevice) return;
+  const cat = CATEGORIES[currentCat];
+  document.getElementById("records-device-name").textContent = currentDevice.name;
+  document.getElementById("records-device-id").textContent = currentDevice.id;
+  document.getElementById("records-header").className = `detail-header ${cat.catClass}`;
+  renderRecordsList();
+  showPage("page-records");
+}
+
+function renderRecordsList() {
+  const container = document.getElementById("records-list");
+  if (!currentDevice.logs || currentDevice.logs.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="padding:48px 0"><div class="empty-icon">📋</div>暂无检查记录</div>`;
+    return;
+  }
+  const sorted = [...currentDevice.logs].reverse();
+  const cat = CATEGORIES[currentCat];
+  const yn = v => v === "有" ? `<span class="status-badge badge-ok">✅ 有</span>` : v === "无" ? `<span class="status-badge badge-error">❌ 无</span>` : v || "—";
+
+  container.innerHTML = sorted.map((log, si) => {
+    const realIdx = currentDevice.logs.length - 1 - si; // 原始索引
+    const clipfuncStr = (log.clipfunc && log.clipfunc.length > 0)
+      ? log.clipfunc.map(v => v === "其他" && log.clipfuncOther ? "其他：" + log.clipfuncOther : v).join("、")
+      : "";
+    return `
+    <div class="record-card">
+      <div class="record-header">
+        <div>
+          <div class="record-time">${log.time || "未知时间"}</div>
+          <div class="record-checker">检查人：${log.checker || "—"}</div>
+        </div>
+        <div class="record-actions">
+          <button class="btn-edit" onclick="openEditRecordModal(${realIdx})">✏️ 编辑</button>
+          <button class="btn-delete" onclick="openDeleteConfirm(${realIdx})">🗑️ 删除</button>
+        </div>
+      </div>
+      <div class="record-body">
+        <div class="record-field"><span class="record-field-label">📍 位置</span><span class="record-field-value">${log.location || "—"}</span></div>
+        <div class="record-field"><span class="record-field-label">扩张鞘</span><span class="record-field-value">${yn(log.dilator)}</span></div>
+        <div class="record-field"><span class="record-field-label">心脏模型</span><span class="record-field-value">${yn(log.heartmodel)}</span></div>
+        <div class="record-field"><span class="record-field-label">导引鞘</span><span class="record-field-value">${yn(log.guidesheath)}</span></div>
+        <div class="record-field"><span class="record-field-label">瓣膜夹</span><span class="record-field-value">${yn(log.clip)}</span></div>
+        ${clipfuncStr ? `<div class="record-field"><span class="record-field-label">瓣膜夹功能</span><span class="record-field-value" style="color:#9b2c2c;font-size:12px">${clipfuncStr}</span></div>` : ""}
+        ${log.note ? `<div class="record-note">📝 ${log.note}</div>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function openEditRecordModal(idx) {
+  editingRecordIndex = idx;
+  const log = currentDevice.logs[idx];
+  if (!log) return;
+
+  const yn = (field, val) => `
+    <select id="edit-${field}" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit">
+      <option value="有" ${val === "有" ? "selected" : ""}>✅ 有</option>
+      <option value="无" ${val === "无" ? "selected" : ""}>❌ 无</option>
+      <option value="" ${!val ? "selected" : ""}>— 未记录</option>
+    </select>`;
+
+  const clipfuncOptions = ["可用","夹子打不开","gripper down失效","打弯失效","配件缺失","其他"];
+  const clipfuncChecks = clipfuncOptions.map(v => {
+    const checked = (log.clipfunc && log.clipfunc.includes(v)) ? "checked" : "";
+    return `<label style="display:inline-flex;align-items:center;gap:4px;margin:4px 8px 4px 0;font-size:13px;cursor:pointer"><input type="checkbox" class="edit-clipfunc" value="${v}" ${checked}> ${v}</label>`;
+  }).join("");
+
+  document.getElementById("edit-record-form").innerHTML = `
+    <div class="edit-field"><label>检查时间</label><input type="text" id="edit-time" value="${log.time || ''}"></div>
+    <div class="edit-field"><label>检查人</label><input type="text" id="edit-checker" value="${log.checker || ''}"></div>
+    <div class="edit-field"><label>位置</label><input type="text" id="edit-location" value="${log.location || ''}"></div>
+    <div class="edit-field"><label>扩张鞘</label>${yn("dilator", log.dilator)}</div>
+    <div class="edit-field"><label>心脏模型</label>${yn("heartmodel", log.heartmodel)}</div>
+    <div class="edit-field"><label>导引鞘</label>${yn("guidesheath", log.guidesheath)}</div>
+    <div class="edit-field"><label>瓣膜夹</label>${yn("clip", log.clip)}</div>
+    <div class="edit-field"><label>瓣膜夹功能（多选）</label><div style="padding:4px 0">${clipfuncChecks}</div></div>
+    <div class="edit-field"><label>瓣膜夹功能-其他描述</label><input type="text" id="edit-clipfuncOther" value="${log.clipfuncOther || ''}"></div>
+    <div class="edit-field"><label>备注</label><textarea id="edit-note">${log.note || ''}</textarea></div>
+  `;
+  document.getElementById("edit-record-modal").classList.add("show");
+}
+
+function closeEditRecordModal(event) {
+  if (event && event.target !== document.getElementById("edit-record-modal")) return;
+  document.getElementById("edit-record-modal").classList.remove("show");
+}
+
+function saveEditRecord() {
+  if (editingRecordIndex < 0 || !currentDevice.logs[editingRecordIndex]) return;
+  const log = currentDevice.logs[editingRecordIndex];
+  log.time = document.getElementById("edit-time").value.trim();
+  log.checker = document.getElementById("edit-checker").value.trim();
+  log.location = document.getElementById("edit-location").value.trim();
+  log.dilator = document.getElementById("edit-dilator").value;
+  log.heartmodel = document.getElementById("edit-heartmodel").value;
+  log.guidesheath = document.getElementById("edit-guidesheath").value;
+  log.clip = document.getElementById("edit-clip").value;
+  const clipfuncEls = document.querySelectorAll(".edit-clipfunc:checked");
+  log.clipfunc = Array.from(clipfuncEls).map(el => el.value);
+  log.clipfuncOther = document.getElementById("edit-clipfuncOther").value.trim();
+  log.note = document.getElementById("edit-note").value.trim();
+
+  // 如果编辑的是最新一条记录，更新设备当前状态
+  if (editingRecordIndex === currentDevice.logs.length - 1) {
+    currentDevice.dilator = log.dilator;
+    currentDevice.heartmodel = log.heartmodel;
+    currentDevice.guidesheath = log.guidesheath;
+    currentDevice.clip = log.clip;
+    currentDevice.clipfunc = log.clipfunc;
+    currentDevice.clipfuncOther = log.clipfuncOther;
+    currentDevice.lastCheck = log.time;
+    currentDevice.location = log.location;
+  }
+
+  saveCurrentDevices();
+  closeEditRecordModal();
+  renderRecordsList();
+  showToast("记录已更新");
+}
+
+function openDeleteConfirm(idx) {
+  deletingRecordIndex = idx;
+  const log = currentDevice.logs[idx];
+  document.getElementById("delete-record-info").textContent = `${log.time || "未知时间"} · ${log.checker || "未知检查人"}`;
+  document.getElementById("delete-confirm-modal").classList.add("show");
+}
+
+function closeDeleteModal(event) {
+  if (event && event.target !== document.getElementById("delete-confirm-modal")) return;
+  document.getElementById("delete-confirm-modal").classList.remove("show");
+}
+
+function confirmDeleteRecord() {
+  if (deletingRecordIndex < 0) return;
+  const log = currentDevice.logs[deletingRecordIndex];
+
+  // 删除关联的媒体（IndexedDB中的blob）
+  if (log.mediaCount && log.mediaCount > 0) {
+    // 找到这条记录对应的媒体范围
+    let mediaOffset = 0;
+    for (let i = 0; i < deletingRecordIndex; i++) {
+      mediaOffset += (currentDevice.logs[i].mediaCount || 0);
+    }
+    // 删除对应的IndexedDB blobs
+    for (let mi = 0; mi < log.mediaCount; mi++) {
+      const globalMediaIdx = mediaOffset + mi;
+      if (currentDevice.media[globalMediaIdx] && currentDevice.media[globalMediaIdx].blobKey) {
+        deleteMediaBlob(currentDevice.media[globalMediaIdx].blobKey);
+      }
+    }
+    // 从media数组中移除
+    currentDevice.media.splice(mediaOffset, log.mediaCount);
+  }
+
+  // 从logs中删除
+  currentDevice.logs.splice(deletingRecordIndex, 1);
+
+  // 如果删除的是最新记录，更新设备当前状态为新的最新记录
+  if (currentDevice.logs.length > 0) {
+    const latestLog = currentDevice.logs[currentDevice.logs.length - 1];
+    currentDevice.dilator = latestLog.dilator || "";
+    currentDevice.heartmodel = latestLog.heartmodel || "";
+    currentDevice.guidesheath = latestLog.guidesheath || "";
+    currentDevice.clip = latestLog.clip || "";
+    currentDevice.clipfunc = latestLog.clipfunc || [];
+    currentDevice.clipfuncOther = latestLog.clipfuncOther || "";
+    currentDevice.lastCheck = latestLog.time || null;
+  } else {
+    currentDevice.dilator = "";
+    currentDevice.heartmodel = "";
+    currentDevice.guidesheath = "";
+    currentDevice.clip = "";
+    currentDevice.clipfunc = [];
+    currentDevice.clipfuncOther = "";
+    currentDevice.lastCheck = null;
+  }
+
+  saveCurrentDevices();
+  closeDeleteModal();
+  renderRecordsList();
+  showToast("记录已删除");
 }
 
 // ============================================================
