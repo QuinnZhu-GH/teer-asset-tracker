@@ -394,7 +394,6 @@
       <div class="info-row"><span class="info-label">瓣膜夹</span><span class="info-value" id="d-clip"></span></div>
       <div class="info-row" id="d-clipfunc-row" style="display:none"><span class="info-label">瓣膜夹功能</span><span class="info-value" id="d-clipfunc" style="color:#9b2c2c;font-size:13px"></span></div>
       <div class="info-row"><span class="info-label">检查时间</span><span class="info-value" id="d-checktime"></span></div>
-      <div class="info-row"><span class="info-label">下次期限</span><span class="info-value" id="d-nextcheck"></span></div>
       <div class="info-row" id="d-anomaly-row" style="display:none"><span class="info-label">异常记录</span><span class="info-value" id="d-anomaly" style="color:#c53030"></span></div>
     </div>
     <div class="info-card">
@@ -453,7 +452,6 @@
     <div class="form-section-title">📋 基本信息</div>
     <div class="form-item"><label>检查人</label><input type="text" id="f-checker" placeholder="请输入姓名"></div>
     <div class="form-item"><label>当前位置</label><input type="text" id="f-location" placeholder="如：手术室A / 展区B"></div>
-    <div class="form-item"><label>下次期限</label><input type="date" id="f-nextdate"></div>
   </div>
   <div class="form-section">
     <div class="form-section-title">🔩 器件检查</div>
@@ -957,7 +955,6 @@ function openDetail(deviceId) {
     clipfuncRow.style.display = "none";
   }
   document.getElementById("d-checktime").textContent = currentDevice.lastCheck || "从未检查";
-  document.getElementById("d-nextcheck").textContent = currentDevice.nextCheck || "未设定";
 
   const anomalyRow = document.getElementById("d-anomaly-row");
   if (currentDevice.anomaly) {
@@ -1199,8 +1196,6 @@ function goToCheckForm() {
   document.getElementById("clipfunc-section").style.display = "none";
   document.getElementById("clipfunc-other-row").style.display = "none";
   selectedFiles = [];
-  const next = new Date(); next.setMonth(next.getMonth() + 3);
-  document.getElementById("f-nextdate").value = next.toISOString().split("T")[0];
   document.querySelectorAll(".radio-btn").forEach(b => b.classList.remove("selected", "ok", "warn", "error"));
   radioSelections["dilator"] = null;
   radioSelections["heartmodel"] = null;
@@ -1297,7 +1292,7 @@ async function submitCheck() {
 
   const now = new Date();
   const timeStr = now.toLocaleString("zh-CN", { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
-  const nextDate = document.getElementById("f-nextdate").value;
+  const nextDate = "";
   const clipfuncOther = document.getElementById("f-clipfunc-other") ? document.getElementById("f-clipfunc-other").value.trim() : "";
   const note = document.getElementById("f-note").value.trim();
 
