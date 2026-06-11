@@ -1534,12 +1534,13 @@ function toggleCollapse(headerEl) {
 function openDetail(deviceId) {
   try {
   currentDevice = devices.find(d => d.id === deviceId);
-  if (!currentDevice) return;
+  if (!currentDevice) { alert('未找到设备: ' + deviceId); return; }
   const cat = CATEGORIES[currentCat];
+  if (!cat) { alert('未找到分类: ' + currentCat); return; }
 
   document.getElementById("detail-header").className = `detail-header ${cat.catClass}`;
   document.getElementById("detail-name").textContent = currentDevice.name;
-  document.getElementById("detail-id").textContent = currentDevice.id + " · " + currentDevice.region;
+  document.getElementById("detail-id").textContent = currentDevice.id + " · " + (currentDevice.region || '');
 
   // ===== 主信息条：状态 + 位置 =====
   const useStatusMap = {
