@@ -506,7 +506,7 @@
     <div class="upload-zone" onclick="document.getElementById('file-input').click()">
       <div class="upload-icon">📷</div>
       <p>点击上传图片 / 视频</p>
-      <small>支持 JPG、PNG、MP4，单文件最大 50MB</small>
+      <small>支持 JPG、PNG、MP4，单文件最大 500MB</small>
     </div>
     <input type="file" id="file-input" multiple accept="image/*,video/*" style="display:none" onchange="handleFileSelect(event)">
     <div class="upload-preview" id="upload-preview"></div>
@@ -601,6 +601,75 @@ let selectedFiles = [];
 const radioSelections = {};
 
 const STORE_KEY = "teer_asset_data_v3";
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // 单文件500MB
+
+// ============================================================
+// IndexedDB 媒体存储（替代 base64 存 localStorage）
+// ============================================================
+const MEDIA_DB_NAME = "TEER_MediaStore";
+const MEDIA_DB_VERSION = 1;
+const MEDIA_STORE = "blobs";
+
+function openMediaDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(MEDIA_DB_NAME, MEDIA_DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(MEDIA_STORE)) {
+        db.createObjectStore(MEDIA_STORE, { keyPath: "id" });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveMediaBlob(id, blob) {
+  const db = await openMediaDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(MEDIA_STORE, "readwrite");
+    tx.objectStore(MEDIA_STORE).put({ id, blob });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function getMediaBlob(id) {
+  const db = await openMediaDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(MEDIA_STORE, "readonly");
+    const req = tx.objectStore(MEDIA_STORE).get(id);
+    req.onsuccess = () => resolve(req.result ? req.result.blob : null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function deleteMediaBlob(id) {
+  const db = await openMediaDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(MEDIA_STORE, "readwrite");
+    tx.objectStore(MEDIA_STORE).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+function mediaBlobId(deviceId, index) {
+  return `${deviceId}_media_${index}`;
+}
+
+// 媒体URL缓存（避免重复创建ObjectURL）
+const mediaURLCache = {};
+
+async function getMediaURL(deviceId, index) {
+  const key = mediaBlobId(deviceId, index);
+  if (mediaURLCache[key]) return mediaURLCache[key];
+  const blob = await getMediaBlob(key);
+  if (!blob) return null;
+  const url = URL.createObjectURL(blob);
+  mediaURLCache[key] = url;
+  return url;
+}
 
 // ============================================================
 // 初始化设备
@@ -680,7 +749,19 @@ function ensureDevices(catKey) {
 
 function saveCurrentDevices() {
   let allData = loadData() || {};
-  allData[currentCat] = devices;
+  // 清理：保存时去除media中的data字段（base64数据已迁移到IndexedDB）
+  const cleanDevices = devices.map(d => {
+    const clean = Object.assign({}, d);
+    if (clean.media && clean.media.length > 0) {
+      clean.media = clean.media.map(m => {
+        const copy = Object.assign({}, m);
+        delete copy.data; // 不存base64到localStorage
+        return copy;
+      });
+    }
+    return clean;
+  });
+  allData[currentCat] = cleanDevices;
   saveAllData(allData);
 }
 
@@ -1062,25 +1143,44 @@ function renderTimeline(device, cat) {
     </div>`).join('');
 }
 
-function renderMedia(device) {
+async function renderMedia(device) {
   const container = document.getElementById("d-media");
   if (!device.media || device.media.length === 0) {
     container.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📷</div>暂无媒体记录</div>`;
     return;
   }
-  container.innerHTML = device.media.map((m, i) => {
-    if (m.type === "video") {
-      return `<div class="media-thumb" onclick="viewMedia(${i})"><video src="${m.data}" muted playsinline></video><div class="video-overlay">▶</div><div class="media-date">${m.time}</div></div>`;
+  // 逐个加载媒体URL
+  const items = [];
+  for (let i = 0; i < device.media.length; i++) {
+    const m = device.media[i];
+    let url = null;
+    // 兼容旧数据：如果还有data字段（base64），直接用
+    if (m.data) {
+      url = m.data;
+    } else if (m.blobKey) {
+      url = await getMediaURL(device.id, i);
     }
-    return `<div class="media-thumb" onclick="viewMedia(${i})"><img src="${m.data}" alt="检查图片"><div class="media-date">${m.time}</div></div>`;
-  }).join('');
+    if (!url) { items.push(`<div class="media-thumb"><div style="display:flex;align-items:center;justify-content:center;height:100%;color:#a0aec0;font-size:12px;">加载失败</div></div>`); continue; }
+    if (m.type === "video") {
+      items.push(`<div class="media-thumb" onclick="viewMedia(${i})"><video src="${url}" muted playsinline></video><div class="video-overlay">▶</div><div class="media-date">${m.time}</div></div>`);
+    } else {
+      items.push(`<div class="media-thumb" onclick="viewMedia(${i})"><img src="${url}" alt="检查图片"><div class="media-date">${m.time}</div></div>`);
+    }
+  }
+  container.innerHTML = items.join('');
 }
 
-function viewMedia(index) {
+async function viewMedia(index) {
   if (!currentDevice || !currentDevice.media[index]) return;
   const m = currentDevice.media[index];
+  let url = m.data || null;
+  if (!url && m.blobKey) {
+    const blob = await getMediaBlob(m.blobKey);
+    if (blob) url = URL.createObjectURL(blob);
+  }
+  if (!url) { showToast("无法加载媒体"); return; }
   const win = window.open();
-  win.document.write(`<style>body{margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;}</style>${m.type === "video" ? `<video src="${m.data}" controls autoplay style="max-width:100%;max-height:100vh;"></video>` : `<img src="${m.data}" style="max-width:100%;max-height:100vh;">`}`);
+  win.document.write(`<style>body{margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;}</style>${m.type === "video" ? `<video src="${url}" controls autoplay style="max-width:100%;max-height:100vh;"></video>` : `<img src="${url}" style="max-width:100%;max-height:100vh;">`}`);
 }
 
 // ============================================================
@@ -1158,10 +1258,11 @@ function toggleCheck(btn) {
 
 function handleFileSelect(event) {
   Array.from(event.target.files).forEach(file => {
-    if (file.size > 50 * 1024 * 1024) { showToast("文件超过50MB限制"); return; }
-    const reader = new FileReader();
-    reader.onload = (e) => { selectedFiles.push({ file, data: e.target.result, type: file.type.startsWith("video") ? "video" : "image" }); renderUploadPreview(); };
-    reader.readAsDataURL(file);
+    if (file.size > MAX_FILE_SIZE) { showToast("文件超过500MB限制"); return; }
+    const isVideo = file.type.startsWith("video");
+    const blobUrl = URL.createObjectURL(file);
+    selectedFiles.push({ file, blobUrl, type: isVideo ? "video" : "image" });
+    renderUploadPreview();
   });
   event.target.value = "";
 }
@@ -1169,7 +1270,7 @@ function handleFileSelect(event) {
 function renderUploadPreview() {
   document.getElementById("upload-preview").innerHTML = selectedFiles.map((f, i) => `
     <div class="preview-item">
-      ${f.type === "video" ? `<video src="${f.data}" muted></video>` : `<img src="${f.data}" alt="预览">`}
+      ${f.type === "video" ? `<video src="${f.blobUrl}" muted></video>` : `<img src="${f.blobUrl}" alt="预览">`}
       <div class="preview-type">${f.type === "video" ? "视频" : "图片"}</div>
       <button class="remove-btn" onclick="removeFile(${i})">✕</button>
     </div>`).join('');
@@ -1211,7 +1312,18 @@ async function submitCheck() {
     anomalyParts.push("瓣膜夹功能：" + funcLabels.join("、"));
   }
 
-  const mediaRecords = selectedFiles.map(f => ({ type: f.type, data: f.data, time: timeStr, checker }));
+  // 保存媒体到IndexedDB，localStorage只存引用
+  const mediaStartIdx = (currentDevice.media || []).length;
+  const mediaRecords = [];
+  for (let fi = 0; fi < selectedFiles.length; fi++) {
+    const f = selectedFiles[fi];
+    const blobIdx = mediaStartIdx + fi;
+    const blobKey = mediaBlobId(currentDevice.id, blobIdx);
+    // 将文件转为Blob存入IndexedDB
+    const fileBlob = f.file;
+    await saveMediaBlob(blobKey, fileBlob);
+    mediaRecords.push({ type: f.type, time: timeStr, checker, blobKey });
+  }
   const logEntry = { time: timeStr, checker, location, dilator, heartmodel, guidesheath, clip, clipfunc, clipfuncOther, nextCheck: nextDate, note, mediaCount: mediaRecords.length };
 
   currentDevice.location = location;
