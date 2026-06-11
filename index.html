@@ -115,23 +115,14 @@
   .region-hn .rh-count { background: var(--rc-light); color: var(--rc-accent); }
   .region-hn { border-left: 3.5px solid var(--rc-accent); box-shadow: var(--rc-glow) 0 0 0 1px inset; }
 
-  .region-xb {
-    --rc-bg: #fefce8; --rc-text: #854d0e; --rc-accent: #ca8a04; --rc-light: #fef08a;
-    --rc-border: #fde047; --rc-glow: rgba(202,138,4,0.08);
+  .region-xq {
+    --rc-bg: #f5f3ff; --rc-text: #4c1d95; --rc-accent: #7c3aed; --rc-light: #ede9fe;
+    --rc-border: #c4b5fd; --rc-glow: rgba(124,58,237,0.08);
   }
-  .region-xb .region-header { background: var(--rc-bg); color: var(--rc-text); }
-  .region-xb .region-header::after { background: var(--rc-border); }
-  .region-xb .rh-count { background: var(--rc-light); color: var(--rc-accent); }
-  .region-xb { border-left: 3.5px solid var(--rc-accent); box-shadow: var(--rc-glow) 0 0 0 1px inset; }
-
-  .region-xn {
-    --rc-bg: #fef2f2; --rc-text: #7f1d1d; --rc-accent: #dc2626; --rc-light: #fecaca;
-    --rc-border: #f87171; --rc-glow: rgba(220,38,38,0.08);
-  }
-  .region-xn .region-header { background: var(--rc-bg); color: var(--rc-text); }
-  .region-xn .region-header::after { background: var(--rc-border); }
-  .region-xn .rh-count { background: var(--rc-light); color: var(--rc-accent); }
-  .region-xn { border-left: 3.5px solid var(--rc-accent); box-shadow: var(--rc-glow) 0 0 0 1px inset; }
+  .region-xq .region-header { background: var(--rc-bg); color: var(--rc-text); }
+  .region-xq .region-header::after { background: var(--rc-border); }
+  .region-xq .rh-count { background: var(--rc-light); color: var(--rc-accent); }
+  .region-xq { border-left: 3.5px solid var(--rc-accent); box-shadow: var(--rc-glow) 0 0 0 1px inset; }
 
   .region-devices {
     padding: 10px 12px 12px;
@@ -1077,19 +1068,19 @@ const CATEGORIES = {
 
 const DEVICE_PRESETS = {
   "M-TEER-001": { owner: "张志伟", region: "华东二区", location: "济南", status: "保管地", repair: false, note: "" },
-  "M-TEER-002": { owner: "朱俊杰", region: "西北区", location: "西安", status: "调用中", repair: false, note: "区内使用中" },
+  "M-TEER-002": { owner: "朱俊杰", region: "西区", location: "西安", status: "调用中", repair: false, note: "区内使用中" },
   "M-TEER-003": { owner: "李仁", region: "华东二区", location: "南京", status: "调用中", repair: false, note: "计划跨区调用" },
   "M-TEER-004": { owner: "杭州办", region: "华东一区", location: "杭州仓库", status: "待维修", repair: true, note: "箱体破损" },
   "M-TEER-005": { owner: "李兆佳", region: "华南区", location: "广州", status: "调用中", repair: false, note: "区内使用中" },
   "M-TEER-006": { owner: "杭州办", region: "华东一区", location: "杭州仓库", status: "保管地", repair: false, note: "6号模拟器临时组装，箱体老化卡扣损坏，内置支架为白色塑料款，心脏模型瓣叶损坏，仅用于基础演示需求" },
   "M-TEER-007": { owner: "何子蕙", region: "华东一区", location: "赣州", status: "调用中", repair: false, note: "华中区内调用" },
   "M-TEER-008": { owner: "关万鑫", region: "华东一区", location: "上海", status: "调用中", repair: false, note: "" },
-  "M-TEER-009": { owner: "郑兵", region: "西北区", location: "乌鲁木齐", status: "保管地", repair: false, note: "" },
+  "M-TEER-009": { owner: "郑兵", region: "西区", location: "乌鲁木齐", status: "保管地", repair: false, note: "" },
   "M-TEER-010": { owner: "刘贵", region: "华中区", location: "合肥", status: "调用中", repair: false, note: "淮北矿工总医院科室会" },
   "M-TEER-011": { owner: "曹海波", region: "华东一区", location: "福建", status: "保管地", repair: false, note: "" },
   "M-TEER-012": { owner: "胡洋洋", region: "华北区", location: "北京", status: "保管地", repair: false, note: "" },
   "M-TEER-013": { owner: "杭州办", region: "华东一区", location: "杭州仓库", status: "招标", repair: false, note: "13号模拟器仅包含导引鞘和瓣膜夹，建议仅招标调用" },
-  "M-TEER-014": { owner: "王燕", region: "西南区", location: "重庆", status: "调用中", repair: true, note: "寄回杭州，CDS维护" }
+  "M-TEER-014": { owner: "王燕", region: "西区", location: "重庆", status: "调用中", repair: true, note: "寄回杭州，CDS维护" }
 };
 
 // ============================================================
@@ -1101,8 +1092,7 @@ const REGION_CONFIG = {
   "华中区":   { name: "华中区",   manager: "冯景", color: "#0d7377", bg: "#e6fffa", border: "#81e6d9" },
   "华北区":   { name: "华北区",   manager: "张媤媪", color: "#9c4221", bg: "#fff0e6", border: "#fbd38d" },
   "华南区":   { name: "华南区",   manager: "王文韬(代)", color: "#276749", bg: "#e6ffed", border: "#9ae6b4" },
-  "西北区":   { name: "西北区",   manager: "王若仲", color: "#975a16", bg: "#fff8e6", border: "#f6e05e" },
-  "西南区":   { name: "西南区",   manager: "王若仲(鼎)", color: "#9b2c2c", bg: "#ffe6e6", border: "#feb2b2" }
+  "西区":     { name: "西区",     manager: "王若仲", color: "#7c3aed", bg: "#f5f3ff", border: "#c4b5fd" }
 };
 
 // 位置 → 地区映射（按公司组织架构划分，非纯地理）
@@ -1132,18 +1122,17 @@ const LOCATION_TO_REGION = {
   "广东": "华南区", "广州": "华南区", "深圳": "华南区",
   "广西": "华南区", "南宁": "华南区",
   "海南": "华南区", "海口": "华南区",
-  // 西北区
-  "甘肃": "西北区", "兰州": "西北区",
-  "陕西": "西北区", "西安": "西北区",
-  "宁夏": "西北区", "银川": "西北区",
-  "新疆": "西北区", "乌鲁木齐": "西北区",
-  "青海": "西北区", "西宁": "西北区",
-  // 西南区
-  "云南": "西南区", "昆明": "西南区",
-  "四川": "西南区", "成都": "西南区",
-  "贵州": "西南区", "贵阳": "西南区",
-  "重庆": "西南区", "重庆市": "西南区",
-  "西藏": "西南区", "拉萨": "西南区"
+  // 西区（西北+西南合并）
+  "甘肃": "西区", "兰州": "西区",
+  "陕西": "西区", "西安": "西区",
+  "宁夏": "西区", "银川": "西区",
+  "新疆": "西区", "乌鲁木齐": "西区",
+  "青海": "西区", "西宁": "西区",
+  "云南": "西区", "昆明": "西区",
+  "四川": "西区", "成都": "西区",
+  "贵州": "西区", "贵阳": "西区",
+  "重庆": "西区", "重庆市": "西区",
+  "西藏": "西区", "拉萨": "西区"
 };
 
 function getRegionFromLocation(loc) {
@@ -1468,7 +1457,7 @@ function renderDeviceList() {
   regionKeys.forEach(rk => {
     const cfg = REGION_CONFIG[rk];
     const devs = groups[rk] || [];
-    const regionClass = `region-${rk === "华东一区" ? "hd1" : rk === "华东二区" ? "hd2" : rk === "华中区" ? "hz" : rk === "华北区" ? "hb" : rk === "华南区" ? "hn" : rk === "西北区" ? "xb" : "xn"}`;
+    const regionClass = `region-${rk === "华东一区" ? "hd1" : rk === "华东二区" ? "hd2" : rk === "华中区" ? "hz" : rk === "华北区" ? "hb" : rk === "华南区" ? "hn" : "xq"}`;
 
     html += `<div class="region-panel ${regionClass}">
       <div class="region-header">
