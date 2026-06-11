@@ -1154,14 +1154,27 @@ function getRegionFromLocation(loc) {
 }
 
 function isCrossRegion(dev) {
-  if (!dev.region || !dev.location) return false;
-  const locRegion = getRegionFromLocation(dev.location);
+  if (!dev.region) return false;
+  const latestLoc = getLatestLocation(dev);
+  const locRegion = getRegionFromLocation(latestLoc);
   if (!locRegion) return false;
   return locRegion !== dev.region;
 }
 
 function isWarehouseDevice(dev) {
-  return dev.owner === "杭州办" || (dev.location && dev.location.includes("仓库"));
+  const loc = getLatestLocation(dev);
+  return dev.owner === "杭州办" || (loc && loc.includes("仓库"));
+}
+
+// 获取设备的最新有效位置（优先从最新检查记录取，其次用设备location字段）
+function getLatestLocation(dev) {
+  if (dev.logs && dev.logs.length > 0) {
+    const lastLog = dev.logs[dev.logs.length - 1];
+    if (lastLog && lastLog.location && lastLog.location.trim()) {
+      return lastLog.location;
+    }
+  }
+  return dev.location || '';
 }
 
 let currentCat = null;
@@ -1412,16 +1425,17 @@ function renderDeviceList() {
   document.getElementById("list-title").textContent = `${cat.icon} ${cat.label}`;
   document.getElementById("list-badge").textContent = `${devices.length} 台`;
 
-  // 按地区分组（动态：以最新位置为准，位置无法推算时用预设region兜底）
+  // 按地区分组（动态：以最新检查记录的位置为准）
   const groups = {};
   const regionKeys = Object.keys(REGION_CONFIG);
   regionKeys.forEach(rk => { groups[rk] = []; });
 
   devices.forEach(d => {
-    // 优先从当前最新location动态推算大区，其次使用预设归属
-    const locRegion = getRegionFromLocation(d.location);
+    const latestLoc = getLatestLocation(d);
+    const locRegion = getRegionFromLocation(latestLoc);
     const regionKey = locRegion || d.region || "未分配";
     if (!groups[regionKey]) groups[regionKey] = [];
+    d._latestLoc = latestLoc; // 缓存供渲染用
     d._dynamicRegion = locRegion; // 记录动态区域用于跨区判断
     groups[regionKey].push(d);
   });
@@ -1487,7 +1501,7 @@ function renderDeviceList() {
             ontouchstart="handleLongPress('${d.id}')" ontouchend="cancelLongPress()">
             <div class="st-dot ${dotCls}"></div>
             <span class="dev-chip-id">${d.id.replace(cat.idPrefix + '-', '')}${extraHtml}</span>
-            <span class="dev-chip-loc">${d.location || '未知'}${xrHtml}</span>
+            <span class="dev-chip-loc">${d._latestLoc || '未知'}${xrHtml}</span>
           </div>`;
       });
     }
