@@ -344,6 +344,12 @@
       <div class="info-row"><span class="info-label">常规保管人</span><span class="info-value" id="d-owner"></span></div>
     </div>
     <div class="info-card">
+      <h3>📡 当前状态</h3>
+      <div class="info-row"><span class="info-label">使用状态</span><span class="info-value" id="d-usestatus"></span></div>
+      <div class="info-row"><span class="info-label">需要维修</span><span class="info-value" id="d-repair"></span></div>
+      <div class="info-row" id="d-presetnote-row" style="display:none"><span class="info-label">备注</span><span class="info-value" id="d-presetnote" style="color:#9b2c2c;font-size:13px"></span></div>
+    </div>
+    <div class="info-card">
       <h3>🔍 最新检查状态</h3>
       <div class="info-row"><span class="info-label">器件完整</span><span class="info-value" id="d-parts"></span></div>
       <div class="info-row"><span class="info-label">功能状态</span><span class="info-value" id="d-func"></span></div>
@@ -473,23 +479,24 @@ const CATEGORIES = {
 
 // 设备固定属性预设（常规保管人、所属区域、常规保管位置）
 // 短时间内固定，后续修改时更新此对象即可
+// 数据来源：D:/模拟器管理状态表.xlsx
 const DEVICE_PRESETS = {
-  "T-TEER-001": { owner: "（待填写）", region: "（待填写）", location: "（待填写）" },
-  "T-TEER-002": { owner: "（待填写）", region: "（待填写）", location: "（待填写）" },
-  "M-TEER-001": { owner: "张杰伟", region: "华东2", location: "济安" },
-  "M-TEER-002": { owner: "朱俊东", region: "西北", location: "西安" },
-  "M-TEER-003": { owner: "李仁", region: "华东2", location: "衢州" },
-  "M-TEER-004": { owner: "杭州办", region: "杭州办", location: "杭州仓" },
-  "M-TEER-005": { owner: "李承艳", region: "华蓉", location: "广州" },
-  "M-TEER-006": { owner: "杭州办", region: "杭州办", location: "杭州仓库" },
-  "M-TEER-007": { owner: "王蒙", region: "西南", location: "重庆" },
-  "M-TEER-008": { owner: "何子惠", region: "华东1", location: "杭州在库" },
-  "M-TEER-009": { owner: "关乃磊", region: "杭州1", location: "上海" },
-  "M-TEER-010": { owner: "郑冉", region: "西北", location: "乌鲁木齐" },
-  "M-TEER-011": { owner: "刘雷", region: "华中", location: "合肥" },
-  "M-TEER-012": { owner: "曹培波", region: "华东1", location: "福建" },
-  "M-TEER-013": { owner: "顾洋泽", region: "华北", location: "北京" },
-  "M-TEER-014": { owner: "杭州办", region: "杭州办", location: "杭州仓库" }
+  "T-TEER-001": { owner: "朱庆媛", region: "杭州", location: "行政仓库", status: "保管地", repair: false, note: "" },
+  "T-TEER-002": { owner: "（待填写）", region: "（待填写）", location: "（待填写）", status: "", repair: false, note: "" },
+  "M-TEER-001": { owner: "张志伟", region: "华东2", location: "济南", status: "保管地", repair: false, note: "" },
+  "M-TEER-002": { owner: "朱俊杰", region: "西北", location: "西安", status: "调用中", repair: false, note: "区内使用中" },
+  "M-TEER-003": { owner: "李仁", region: "华东2", location: "南京", status: "调用中", repair: false, note: "计划跨区调用" },
+  "M-TEER-004": { owner: "杭州办", region: "杭州办", location: "杭州仓库", status: "待维修", repair: true, note: "箱体破损" },
+  "M-TEER-005": { owner: "李兆佳", region: "华南", location: "广州", status: "调用中", repair: false, note: "区内使用中" },
+  "M-TEER-006": { owner: "杭州办", region: "杭州办", location: "杭州仓库", status: "保管地", repair: false, note: "6号模拟器临时组装，箱体老化卡扣损坏，内置支架为白色塑料款，心脏模型瓣叶损坏，仅用于基础演示需求" },
+  "M-TEER-007": { owner: "何子蕙", region: "华东1", location: "杭州仓库", status: "调用中", repair: false, note: "华中区内调用" },
+  "M-TEER-008": { owner: "关万鑫", region: "华东1", location: "上海", status: "调用中", repair: false, note: "" },
+  "M-TEER-009": { owner: "郑兵", region: "西北", location: "乌鲁木齐", status: "保管地", repair: false, note: "" },
+  "M-TEER-010": { owner: "刘贵", region: "华中", location: "合肥", status: "调用中", repair: false, note: "淮北矿工总医院科室会" },
+  "M-TEER-011": { owner: "曹海波", region: "华东1", location: "福建", status: "保管地", repair: false, note: "" },
+  "M-TEER-012": { owner: "胡洋洋", region: "华北", location: "北京", status: "保管地", repair: false, note: "" },
+  "M-TEER-013": { owner: "杭州办", region: "杭州办", location: "杭州仓库", status: "招标", repair: false, note: "13号模拟器仅包含导引鞘和瓣膜夹，建议仅招标调用" },
+  "M-TEER-014": { owner: "王燕", region: "西南", location: "重庆", status: "调用中", repair: true, note: "寄回杭州，CDS维护" }
 };
 
 // 当前分类（从URL读取）
@@ -520,6 +527,9 @@ function createDefaultDevices(catKey) {
       location: preset.location || "（待填写）",
       region: preset.region || "（待填写）",
       owner: preset.owner || "（待填写）",
+      useStatus: preset.status || "",
+      needRepair: preset.repair || false,
+      presetNote: preset.note || "",
       category: catKey,
       partsStatus: "unchecked",
       funcStatus: "unchecked",
@@ -562,6 +572,9 @@ function ensureDevices(catKey) {
         d.owner = preset.owner;
         d.region = preset.region;
         d.location = preset.location;
+        d.useStatus = preset.status;
+        d.needRepair = preset.repair;
+        d.presetNote = preset.note;
       }
     });
     saveAllData(allData);
@@ -659,7 +672,7 @@ function renderDeviceList() {
         <div class="device-info">
           <div class="device-name">${d.name}</div>
           <div class="device-id">${d.id}</div>
-          <div class="device-meta">👤 ${d.owner || '—'} · 📍 ${d.location || '—'}</div>
+          <div class="device-meta">👤 ${d.owner || '—'} · 📍 ${d.location || '—'}${d.useStatus ? ' · ' + d.useStatus : ''}${d.needRepair ? ' · ⚠️待维修' : ''}</div>
           <div class="device-status">
             <div class="status-dot ${dotCls}"></div>
             <span class="status-text">${statusText}</span>
@@ -689,6 +702,18 @@ function openDetail(deviceId) {
   document.getElementById("d-region").textContent = currentDevice.region;
   document.getElementById("d-location").textContent = currentDevice.location;
   document.getElementById("d-owner").textContent = currentDevice.owner;
+
+  // 当前状态
+  const useStatusMap = {"保管地": "🟢 保管地", "调用中": "🟠 调用中", "待维修": "🔴 待维修", "招标": "🔵 招标", "": "⚪ 未设置"};
+  document.getElementById("d-usestatus").textContent = useStatusMap[currentDevice.useStatus] || currentDevice.useStatus || "⚪ 未设置";
+  document.getElementById("d-repair").textContent = currentDevice.needRepair ? "⚠️ 是" : "✅ 否";
+  const presetNoteRow = document.getElementById("d-presetnote-row");
+  if (currentDevice.presetNote) {
+    presetNoteRow.style.display = "flex";
+    document.getElementById("d-presetnote").textContent = currentDevice.presetNote;
+  } else {
+    presetNoteRow.style.display = "none";
+  }
   document.getElementById("d-parts").innerHTML = statusBadge(currentDevice.partsStatus);
   document.getElementById("d-func").innerHTML = statusBadge(currentDevice.funcStatus);
   document.getElementById("d-checktime").textContent = currentDevice.lastCheck || "从未检查";
