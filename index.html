@@ -1081,7 +1081,7 @@ const DEVICE_PRESETS = {
   "M-TEER-004": { owner: "杭州办", region: "华东一区", location: "杭州仓库", status: "待维修", repair: true, note: "箱体破损" },
   "M-TEER-005": { owner: "李兆佳", region: "华南区", location: "广州", status: "调用中", repair: false, note: "区内使用中" },
   "M-TEER-006": { owner: "杭州办", region: "华东一区", location: "杭州仓库", status: "保管地", repair: false, note: "6号模拟器临时组装，箱体老化卡扣损坏，内置支架为白色塑料款，心脏模型瓣叶损坏，仅用于基础演示需求" },
-  "M-TEER-007": { owner: "何子蕙", region: "华东一区", location: "杭州仓库", status: "调用中", repair: false, note: "华中区内调用" },
+  "M-TEER-007": { owner: "何子蕙", region: "华东一区", location: "赣州", status: "调用中", repair: false, note: "华中区内调用" },
   "M-TEER-008": { owner: "关万鑫", region: "华东一区", location: "上海", status: "调用中", repair: false, note: "" },
   "M-TEER-009": { owner: "郑兵", region: "西北区", location: "乌鲁木齐", status: "保管地", repair: false, note: "" },
   "M-TEER-010": { owner: "刘贵", region: "华中区", location: "合肥", status: "调用中", repair: false, note: "淮北矿工总医院科室会" },
@@ -1302,7 +1302,10 @@ function ensureDevices(catKey) {
       if (preset) {
         d.owner = preset.owner;
         d.region = preset.region;
-        d.location = preset.location;
+        // location 不从预设覆盖，保留实际最新位置（仅首次初始化时使用预设）
+        if (!d.location || d.location === "（待填写）" || d.location === "") {
+          d.location = preset.location;
+        }
         d.useStatus = preset.status;
         d.needRepair = preset.repair;
         d.presetNote = preset.note;
