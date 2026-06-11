@@ -650,16 +650,38 @@
     align-items: flex-start;
     gap: 12px;
   }
-  .ps-status-group { display: flex; flex-direction: column; gap: 6px; }
+  .ps-status-group { display: flex; flex-direction: column; gap: 6px; position: relative; }
   .ps-status-pill {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 6px 14px; border-radius: 20px;
     font-size: 14px; font-weight: 700;
+    cursor: pointer; user-select: none; transition: opacity 0.15s;
   }
+  .ps-status-pill:hover { opacity: 0.8; }
   .ps-status-pill.ok { background: #f0fff4; color: #276749; }
   .ps-status-pill.warn { background: #fffaf0; color: #c05621; }
   .ps-status-pill.error { background: #fff5f5; color: #c53030; }
   .ps-status-pill.info { background: #ebf8ff; color: #2b6cb0; }
+
+  /* 状态下拉菜单 */
+  .status-dropdown {
+    position: absolute; top: 100%; left: 0; margin-top: 4px;
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    min-width: 140px; z-index: 100; overflow: hidden;
+    animation: sdFadeIn 0.15s ease;
+  }
+  @keyframes sdFadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+  .status-opt {
+    display: flex; align-items: center; padding: 10px 14px;
+    font-size: 13px; color: #374151; cursor: pointer;
+    transition: background 0.1s;
+  }
+  .status-opt:hover { background: #f3f4f6; }
+  .status-opt.active { background: #f9fafb; font-weight: 600; }
+  .ps-status-sub {
+    font-size: 11px; color: #999; margin-top: 2px; padding-left: 4px;
+  }
   .ps-repair-tag {
     display: inline-flex; align-items: center; gap: 4px;
     padding: 4px 10px; border-radius: 12px;
@@ -1312,9 +1334,24 @@ function ensureDevices(catKey) {
         if (!hasRealHistory) {
           d.location = preset.location;
         }
-        d.useStatus = preset.status;
         d.needRepair = preset.repair;
         d.presetNote = preset.note;
+
+        // 仅当用户未手动设置过useStatus时，才自动推断
+        // 用户在管理面板上修改过的状态优先级最高，不会被覆盖
+        const latestLoc = getLatestLocation(d);
+        if (latestLoc && latestLoc.trim()) {
+          // 同步location为最新位置
+          d.location = latestLoc;
+          // 仅在 useStatus 尚未手动设置过时才自动推断
+          // 一旦用户通过管理面板改过状态，就永久保留（除非再次手动改）
+          if (!d._statusManualSet) {
+            const atHomeBase = latestLoc.includes(preset.location) || (preset.location.includes(latestLoc));
+            d.useStatus = (atHomeBase || !latestLoc || isWarehouseDevice(d)) ? '保管地' : '调用中';
+          }
+        } else if (!d._statusManualSet) {
+          d.useStatus = preset.status;
+        }
       }
     });
     saveAllData(allData);
@@ -1338,6 +1375,38 @@ function saveCurrentDevices() {
   allData[currentCat] = cleanDevices;
   saveAllData(allData);
 }
+
+/* ===== 状态选择器（管理面板可切换） ===== */
+function toggleStatusMenu(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('status-dropdown');
+  if (dd.style.display === 'block') {
+    dd.style.display = 'none';
+  } else {
+    dd.style.display = 'block';
+  }
+}
+function closeStatusMenu() {
+  const dd = document.getElementById('status-dropdown');
+  if (dd) dd.style.display = 'none';
+}
+function selectStatus(val) {
+  if (!currentDevice) return;
+  currentDevice.useStatus = val;
+  currentDevice._statusManualSet = true; // 标记为手动设置，ensureDevices不会再覆盖
+  saveCurrentDevices();
+  closeStatusMenu();
+  // 重新渲染状态区域
+  openDetail(currentDevice.id);
+}
+// 点击页面其他地方关闭下拉
+document.addEventListener('click', function(e) {
+  const dropdown = document.getElementById('status-dropdown');
+  const selector = document.getElementById('status-selector');
+  if (dropdown && selector && !dropdown.contains(e.target) && !selector.contains(e.target)) {
+    closeStatusMenu();
+  }
+});
 
 function editStatusNote() {
   const noteEl = document.getElementById("ps-note");
@@ -1549,16 +1618,35 @@ function openDetail(deviceId) {
   document.getElementById("detail-name").textContent = currentDevice.name;
   document.getElementById("detail-id").textContent = currentDevice.id + " · " + (currentDevice.region || '');
 
-  // ===== 主信息条：状态 + 位置 =====
-  const useStatusMap = {
-    "保管地": { cls: "ok", text: "🟢 保管地", sub: "设备在保管位置" },
-    "调用中": { cls: "warn", text: "🟠 调用中", sub: "设备已出库使用" },
-    "待维修": { cls: "error", text: "🔴 待维修", sub: "需要维修处理" },
-    "招标": { cls: "info", text: "🔵 招标中", sub: "招标流程中" },
-    "": { cls: "info", text: "⚪ 未设置", sub: "" }
-  };
-  const us = useStatusMap[currentDevice.useStatus] || { cls: "info", text: "⚪ " + (currentDevice.useStatus || "未设置"), sub: "" };
-  document.getElementById("ps-status-pill").innerHTML = `<div class="ps-status-pill ${us.cls}">${us.text}</div>`;
+  // ===== 主信息条：状态（可点击切换）+ 位置 =====
+  const STATUS_OPTIONS = [
+    { val: "保管地", cls: "ok", text: "🟢 保管地", sub: "设备在保管位置" },
+    { val: "调用中", cls: "warn", text: "🟠 调用中", sub: "设备已出库使用" },
+    { val: "待维修", cls: "error", text: "🔴 待维修", sub: "需要维修处理" },
+    { val: "招标", cls: "info", text: "🔵 招标中", sub: "招标流程中" }
+  ];
+  const currentStatus = currentDevice.useStatus || "保管地";
+  const us = STATUS_OPTIONS.find(s => s.val === currentStatus) || STATUS_OPTIONS[0];
+
+  // 渲染状态选择器
+  document.getElementById("ps-status-pill").innerHTML = `
+    <div class="ps-status-pill ${us.cls}" onclick="toggleStatusMenu(event)" id="status-selector">
+      <span id="status-current">${us.text}</span>
+      <span style="margin-left:6px;font-size:11px;opacity:0.7">▼</span>
+    </div>
+    <div class="status-dropdown" id="status-dropdown" style="display:none">
+      ${STATUS_OPTIONS.map(opt =>
+        `<div class="status-opt ${opt.val === currentStatus ? 'active' : ''}"
+             data-val="${opt.val}" data-cls="${opt.cls}"
+             onclick="selectStatus('${opt.val}')">
+          <span style="font-size:14px;margin-right:6px">${opt.text.charAt(0)}</span>
+          <span>${opt.val}</span>
+          ${opt.val === currentStatus ? '<span style="margin-left:auto;color:#999">✓</span>' : ''}
+        </div>`
+      ).join('')}
+    </div>
+  `;
+  document.getElementById("ps-status-sub").textContent = us.sub;
 
   // 维修标记
   const repairTag = document.getElementById("ps-repair-tag");
