@@ -29,45 +29,34 @@
     padding: 4px 12px; border-radius: 14px; font-size: 12px; font-weight: 600;
   }
 
-  /* ===== 总览页 - 地区网格仪表盘 ===== */
-  .dash-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    padding: 8px;
-  }
-  @media (min-width: 768px) {
-    .dash-grid { grid-template-columns: repeat(4, 1fr); }
-  }
-
-  /* 地区面板 */
-  .region-panel {
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  /* ===== 总览页 - 地区纵向仪表盘 ===== */
+  .dash-stack {
     display: flex;
     flex-direction: column;
+    gap: 10px;
+    padding: 8px;
+  }
+
+  /* 地区板块 - 纵向排列 */
+  .region-panel {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
   }
   .region-header {
-    padding: 7px 10px;
-    font-size: 12px;
-    font-weight: 700;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 800;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid transparent;
   }
   .region-header .rh-name { display: flex; align-items: center; gap: 5px; }
-  .region-header .rh-manager {
-    font-size: 10px; font-weight: 500; opacity: 0.75;
-    background: rgba(255,255,255,0.4); padding: 1px 5px;
-    border-radius: 6px;
-  }
   .region-header .rh-count {
     font-size: 11px; font-weight: 700;
-    background: rgba(0,0,0,0.06); padding: 2px 7px;
-    border-radius: 10px;
+    background: rgba(255,255,255,0.45); padding: 3px 10px;
+    border-radius: 12px;
   }
 
   /* 地区色带 */
@@ -79,27 +68,35 @@
   .region-xb .region-header  { background: #fff8e6; color: #975a16; border-bottom-color: #f6e05e; }
   .region-xn .region-header  { background: #ffe6e6; color: #9b2c2c; border-bottom-color: #feb2b2; }
 
-  .region-devices { padding: 2px 4px; flex: 1; }
+  .region-devices {
+    padding: 6px 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
 
-  /* 设备芯片 - 极紧凑 */
+  /* 设备卡片 - 横向排列 */
   .dev-chip {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 5px;
-    padding: 4px 5px;
-    border-bottom: 1px solid #f0f4f8;
+    gap: 3px;
+    padding: 7px 10px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 11px;
-    min-height: 26px;
+    min-width: 68px;
+    background: #f7fafc;
+    border: 1.5px solid transparent;
+    transition: all 0.12s;
     position: relative;
   }
-  .dev-chip:last-child { border-bottom: none; }
-  .dev-chip:hover { background: #f7fafc; }
-  .dev-chip:active { background: #edf2f7; }
+  .dev-chip:hover { background: #edf2f7; border-color: #cbd5e0; }
+  .dev-chip:active { background: #e2e8f0; }
 
   /* 状态点 - 更醒目 */
   .st-dot {
-    width: 8px; height: 8px; border-radius: 50%;
+    width: 9px; height: 9px; border-radius: 50%;
     flex-shrink: 0; position: relative;
   }
   .st-dot.ok { background: #48bb78; }
@@ -114,14 +111,15 @@
   .st-dot.error::after { border-color: rgba(252,92,125,0.35); }
   .st-dot.warn::after { border-color: rgba(237,137,54,0.35); }
 
-  .dev-chip-name {
-    font-weight: 600; color: #1a202c;
-    flex-shrink: 0; font-size: 11px;
+  .dev-chip-id {
+    font-weight: 800; color: #1a202c;
+    font-size: 13px; letter-spacing: -0.3px;
   }
   .dev-chip-loc {
-    color: #718096; font-size: 10px;
-    flex: 1; text-align: right;
+    color: #a0aec0; font-size: 10px;
+    text-align: center;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    max-width: 60px;
   }
 
   /* 跨区/区内 标识 */
@@ -1378,8 +1376,8 @@ function renderDeviceList() {
     <div class="sum-item"><div class="sum-val" style="color:#6b46c1">${crossCount}</div><div class="sum-label">跨区</div></div>
   </div>`;
 
-  // 地区网格
-  html += `<div class="dash-grid">`;
+  // 地区纵向排列
+  html += `<div class="dash-stack">`;
 
   regionKeys.forEach(rk => {
     const cfg = REGION_CONFIG[rk];
@@ -1388,7 +1386,7 @@ function renderDeviceList() {
 
     html += `<div class="region-panel ${regionClass}">
       <div class="region-header">
-        <div class="rh-name">${cfg.name} <span class="rh-manager">${cfg.manager}</span></div>
+        <div class="rh-name">${cfg.name}</div>
         <span class="rh-count">${devs.length}台</span>
       </div>
       <div class="region-devices">`;
@@ -1403,26 +1401,22 @@ function renderDeviceList() {
         // 区内 / 跨区 / 库存
         let xrHtml = '';
         if (isWarehouseDevice(d)) {
-          xrHtml = `<span class="xr-badge warehouse">🏠 总部</span>`;
+          xrHtml = `<span class="xr-badge warehouse">🏠</span>`;
         } else if (isCrossRegion(d)) {
-          xrHtml = `<span class="xr-badge cross">↗ 跨区</span>`;
-        } else {
-          xrHtml = `<span class="xr-badge intra">✓ 区内</span>`;
+          xrHtml = `<span class="xr-badge cross">↗</span>`;
         }
 
         // 维修/运输 优先显示
         let extraHtml = '';
-        if (d.needRepair) extraHtml = `<span style="color:#c53030;font-size:9px;font-weight:600">🔧</span>`;
-        else if (d.shipping && d.shipping.trackingNo) extraHtml = `<span style="color:#6b46c1;font-size:9px;font-weight:600">📦</span>`;
+        if (d.needRepair) extraHtml = ` <span style="color:#c53030;font-size:9px;font-weight:600">🔧</span>`;
+        else if (d.shipping && d.shipping.trackingNo) extraHtml = ` <span style="color:#6b46c1;font-size:9px;font-weight:600">📦</span>`;
 
         html += `
           <div class="dev-chip" onclick="openDetail('${d.id}')"
             ontouchstart="handleLongPress('${d.id}')" ontouchend="cancelLongPress()">
             <div class="st-dot ${dotCls}"></div>
-            <span class="dev-chip-name">${d.id.replace(cat.idPrefix + '-', '')}</span>
-            <span class="dev-chip-loc">${d.location || '未知'}</span>
-            ${extraHtml}
-            ${xrHtml}
+            <span class="dev-chip-id">${d.id.replace(cat.idPrefix + '-', '')}${extraHtml}</span>
+            <span class="dev-chip-loc">${d.location || '未知'}${xrHtml}</span>
           </div>`;
       });
     }
