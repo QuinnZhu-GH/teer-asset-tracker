@@ -161,7 +161,7 @@
     flex-shrink: 0; position: relative;
     margin-bottom: 2px;
   }
-  .st-dot.inuse { background: #7c3aed; box-shadow: 0 0 6px rgba(124,58,237,0.35); }
+  .st-dot.inuse { background: #9575cd; box-shadow: 0 0 5px rgba(149,117,205,0.28); }
   .st-dot.idle { background: #16a34a; }
 
   .dev-chip-id {
@@ -1447,7 +1447,7 @@ function renderDeviceList() {
   // 顶部汇总条
   let html = `<div class="dash-summary">
     <div class="sum-item"><div class="sum-val" style="color:#111;font-weight:900">${devices.length}</div><div class="sum-label">总计</div></div>
-    <div class="sum-item"><div class="sum-val" style="color:#7c3aed;font-weight:800">${inUseCount}</div><div class="sum-label">调用中</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#9575cd;font-weight:800">${inUseCount}</div><div class="sum-label">调用中</div></div>
     <div class="sum-item"><div class="sum-val" style="color:#16a34a;font-weight:800">${idleCount}</div><div class="sum-label">保管地</div></div>
     <div class="sum-item"><div class="sum-val" style="color:#888;font-weight:700">${repairCount}</div><div class="sum-label">待修</div></div>
     <div class="sum-item"><div class="sum-val" style="color:#777;font-weight:700">${crossCount}</div><div class="sum-label">跨区</div></div>
