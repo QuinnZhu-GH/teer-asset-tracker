@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TEER模拟器资产管理</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+    background: #f0f4f8;
+    color: #1a202c;
+    min-height: 100vh;
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* 顶部栏 - 按分类着色 */
+  .header {
+    color: white;
+    padding: 20px 16px 16px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .header.cat-t-teer { background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%); }
+  .header.cat-m-teer { background: linear-gradient(135deg, #5f1e3a 0%, #9f2d6a 100%); }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header p { font-size: 12px; opacity: 0.75; margin-top: 3px; }
+
+  /* 设备列表 */
+  .device-list { padding: 12px; }
+  .device-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+    display: flex; align-items: center;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 4px solid #e2e8f0;
+  }
+  .device-card:active { transform: scale(0.98); }
+  .device-card.status-ok { border-left-color: #48bb78; }
+  .device-card.status-warn { border-left-color: #ed8936; }
+  .device-card.status-error { border-left-color: #fc5c7d; }
+  .device-card.status-unchecked { border-left-color: #a0aec0; }
+
+  .device-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0; margin-right: 12px;
+  }
+  .cat-t-teer .device-icon { background: #ebf8ff; }
+  .cat-m-teer .device-icon { background: #fce7f3; }
+
+  .device-info { flex: 1; min-width: 0; }
+  .device-name { font-size: 15px; font-weight: 600; color: #1a202c; }
+  .device-id { font-size: 12px; color: #718096; margin-top: 2px; }
+  .device-status { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #a0aec0; flex-shrink: 0; }
+  .status-dot.ok { background: #48bb78; }
+  .status-dot.warn { background: #ed8936; }
+  .status-dot.error { background: #fc5c7d; }
+  .status-text { font-size: 12px; color: #718096; }
+  .last-check { font-size: 11px; color: #a0aec0; margin-top: 2px; }
+  .arrow { color: #cbd5e0; font-size: 18px; margin-left: 8px; }
+
+  /* 统计条 */
+  .stats-bar {
+    display: flex; gap: 8px; padding: 0 12px 12px;
+  }
+  .stat-chip {
+    flex: 1; background: white; border-radius: 8px;
+    padding: 10px 12px; text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .stat-num { font-size: 20px; font-weight: 700; }
+  .stat-num.green { color: #48bb78; }
+  .stat-num.red { color: #fc5c7d; }
+  .stat-num.gray { color: #a0aec0; }
+  .stat-label { font-size: 11px; color: #718096; margin-top: 2px; }
+
+  /* 详情页 */
+  .detail-header { color: white; padding: 16px; }
+  .detail-header.cat-t-teer { background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%); }
+  .detail-header.cat-m-teer { background: linear-gradient(135deg, #5f1e3a 0%, #9f2d6a 100%); }
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 15px; cursor: pointer; margin-bottom: 12px;
+    opacity: 0.9; background: none; border: none; color: white;
+  }
+  .detail-device-name { font-size: 20px; font-weight: 700; }
+  .detail-device-id { font-size: 13px; opacity: 0.75; margin-top: 3px; }
+  .detail-body { padding: 12px; }
+
+  .info-card {
+    background: white; border-radius: 12px;
+    padding: 16px; margin-bottom: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  .info-card h3 {
+    font-size: 13px; color: #718096; font-weight: 500;
+    margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .info-row {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 8px 0; border-bottom: 1px solid #f7fafc;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { font-size: 13px; color: #718096; flex-shrink: 0; width: 80px; }
+  .info-value { font-size: 14px; color: #1a202c; text-align: right; flex: 1; word-break: break-all; }
+
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 13px; font-weight: 500;
+  }
+  .badge-ok { background: #f0fff4; color: #276749; }
+  .badge-warn { background: #fffaf0; color: #c05621; }
+  .badge-error { background: #fff5f5; color: #c53030; }
+  .badge-unchecked { background: #f7fafc; color: #718096; }
+
+  /* 时间轴 */
+  .timeline { padding: 8px 16px 16px; }
+  .timeline-item { display: flex; gap: 12px; padding: 10px 0; position: relative; }
+  .timeline-item::before {
+    content: ''; position: absolute;
+    left: 7px; top: 26px; bottom: -10px;
+    width: 2px; background: #e2e8f0;
+  }
+  .timeline-item:last-child::before { display: none; }
+  .tl-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid #bee3f8; flex-shrink: 0; margin-top: 2px;
+  }
+  .cat-t-teer .tl-dot { background: #2d6a9f; border-color: #bee3f8; }
+  .cat-m-teer .tl-dot { background: #9f2d6a; border-color: #fbb6ce; }
+  .tl-content { flex: 1; }
+  .tl-location { font-size: 14px; font-weight: 600; color: #1a202c; }
+  .tl-time { font-size: 12px; color: #a0aec0; margin-top: 2px; }
+  .tl-checker { font-size: 12px; color: #718096; margin-top: 2px; }
+  .tl-status { margin-top: 4px; }
+
+  /* 媒体 */
+  .media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+  .media-thumb {
+    aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+    background: #edf2f7; cursor: pointer; position: relative;
+  }
+  .media-thumb img, .media-thumb video { width: 100%; height: 100%; object-fit: cover; }
+  .media-thumb .video-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.3); color: white; font-size: 24px;
+  }
+  .media-thumb .media-date {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.5); color: white;
+    font-size: 10px; padding: 3px 5px; text-align: center;
+  }
+
+  /* 表单 */
+  .form-section {
+    background: white; border-radius: 12px;
+    margin: 12px; overflow: hidden;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  .form-section-title {
+    font-size: 13px; color: #718096; font-weight: 500;
+    padding: 14px 16px 8px; border-bottom: 1px solid #f0f4f8;
+    background: #fafafa; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .form-item {
+    padding: 14px 16px; border-bottom: 1px solid #f7fafc;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .form-item:last-child { border-bottom: none; }
+  .form-item label {
+    font-size: 14px; color: #2d3748; font-weight: 500;
+    width: 90px; flex-shrink: 0;
+  }
+  .form-item input, .form-item select, .form-item textarea {
+    flex: 1; border: none; outline: none;
+    font-size: 14px; color: #1a202c; background: transparent;
+    font-family: inherit;
+  }
+  .form-item textarea { resize: none; height: 60px; align-self: flex-start; }
+
+  .radio-group { display: flex; gap: 10px; flex-wrap: wrap; flex: 1; }
+  .radio-btn {
+    flex: 1; min-width: 80px;
+    padding: 8px 12px; border-radius: 8px; border: 1.5px solid #e2e8f0;
+    text-align: center; font-size: 13px; cursor: pointer;
+    transition: all 0.15s; color: #718096; background: white;
+    font-family: inherit;
+  }
+  .radio-btn.selected.ok { border-color: #48bb78; background: #f0fff4; color: #276749; font-weight: 600; }
+  .radio-btn.selected.error { border-color: #fc5c7d; background: #fff5f5; color: #c53030; font-weight: 600; }
+
+  .upload-zone {
+    margin: 12px 16px;
+    border: 2px dashed #bee3f8; border-radius: 12px;
+    padding: 20px; text-align: center; cursor: pointer;
+    background: #ebf8ff; transition: all 0.15s;
+  }
+  .cat-m-teer .upload-zone { border-color: #fbb6ce; background: #fdf2f8; }
+  .upload-zone .upload-icon { font-size: 36px; margin-bottom: 8px; }
+  .upload-zone p { font-size: 14px; color: #2b6cb0; font-weight: 500; }
+  .cat-m-teer .upload-zone p { color: #9f2d6a; }
+  .upload-zone small { font-size: 12px; color: #718096; display: block; margin-top: 4px; }
+
+  .upload-preview { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 12px 12px; }
+  .preview-item {
+    position: relative; width: 80px; height: 80px;
+    border-radius: 8px; overflow: hidden; background: #edf2f7;
+  }
+  .preview-item img, .preview-item video { width: 100%; height: 100%; object-fit: cover; }
+  .preview-item .remove-btn {
+    position: absolute; top: -3px; right: -3px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #fc5c7d; color: white;
+    border: none; font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; z-index: 10;
+  }
+  .preview-type {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.5); color: white;
+    font-size: 10px; padding: 2px 4px; text-align: center;
+  }
+
+  .submit-btn {
+    display: block; width: calc(100% - 24px);
+    margin: 12px; padding: 16px;
+    color: white; border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: transform 0.15s;
+  }
+  .submit-btn:active { transform: scale(0.98); }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .cat-t-teer .submit-btn { background: linear-gradient(135deg, #1e3a5f, #2d6a9f); box-shadow: 0 4px 14px rgba(30,58,95,0.35); }
+  .cat-m-teer .submit-btn { background: linear-gradient(135deg, #5f1e3a, #9f2d6a); box-shadow: 0 4px 14px rgba(95,30,58,0.35); }
+
+  /* 成功弹层 */
+  .success-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5); z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .success-overlay.show { display: flex; }
+  .success-card {
+    background: white; border-radius: 20px;
+    padding: 32px; text-align: center; width: 280px;
+    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes popIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .success-icon { font-size: 56px; margin-bottom: 12px; }
+  .success-title { font-size: 18px; font-weight: 700; color: #1a202c; }
+  .success-sub { font-size: 13px; color: #718096; margin-top: 6px; }
+  .success-close {
+    margin-top: 20px; padding: 10px 32px;
+    background: #1e3a5f; color: white;
+    border: none; border-radius: 24px; font-size: 14px;
+    cursor: pointer; font-family: inherit;
+  }
+
+  /* 二维码弹层 */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 500;
+    align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-sheet {
+    background: white; width: 100%; max-width: 500px;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 24px 40px;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle { width: 40px; height: 4px; background: #e2e8f0; border-radius: 2px; margin: 0 auto 20px; }
+  .modal-title { font-size: 17px; font-weight: 600; text-align: center; margin-bottom: 20px; }
+  #qrcode-container { text-align: center; }
+  .qr-label { font-size: 13px; color: #718096; text-align: center; margin-top: 12px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-btn { flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 14px; cursor: pointer; font-family: inherit; font-weight: 500; }
+  .modal-btn.primary { background: #1e3a5f; color: white; }
+  .modal-btn.secondary { background: #f7fafc; color: #1a202c; }
+
+  /* 空状态 */
+  .empty-state { text-align: center; padding: 32px; color: #a0aec0; font-size: 14px; }
+  .empty-state .empty-icon { font-size: 40px; margin-bottom: 8px; }
+
+  .toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.75); color: white;
+    padding: 10px 20px; border-radius: 24px;
+    font-size: 14px; z-index: 2000;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  .loading-spinner {
+    display: inline-block; width: 20px; height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white; border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle; margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- ===== 页面1：设备列表 ===== -->
+<div id="page-list" class="page active">
+  <div class="header" id="list-header">
+    <h1 id="list-title">🏥 TEER模拟器资产管理</h1>
+    <p id="list-subtitle">点击设备卡片查看详情 · 长按弹出二维码</p>
+  </div>
+  <div class="stats-bar" id="stats-bar"></div>
+  <div class="device-list" id="device-list-container"></div>
+</div>
+
+<!-- ===== 页面2：设备详情 ===== -->
+<div id="page-detail" class="page">
+  <div class="detail-header" id="detail-header">
+    <button class="back-btn" onclick="goBack('page-list')">← 返回列表</button>
+    <div class="detail-device-name" id="detail-name"></div>
+    <div class="detail-device-id" id="detail-id"></div>
+  </div>
+  <div class="detail-body">
+    <div class="info-card">
+      <h3>📋 基本信息</h3>
+      <div class="info-row"><span class="info-label">资产编号</span><span class="info-value" id="d-assetno"></span></div>
+      <div class="info-row"><span class="info-label">分类</span><span class="info-value" id="d-category"></span></div>
+      <div class="info-row"><span class="info-label">型号规格</span><span class="info-value" id="d-model"></span></div>
+      <div class="info-row"><span class="info-label">序列号</span><span class="info-value" id="d-sn"></span></div>
+      <div class="info-row"><span class="info-label">存放位置</span><span class="info-value" id="d-location"></span></div>
+      <div class="info-row"><span class="info-label">负责人</span><span class="info-value" id="d-owner"></span></div>
+    </div>
+    <div class="info-card">
+      <h3>🔍 最新检查状态</h3>
+      <div class="info-row"><span class="info-label">器件完整</span><span class="info-value" id="d-parts"></span></div>
+      <div class="info-row"><span class="info-label">功能状态</span><span class="info-value" id="d-func"></span></div>
+      <div class="info-row"><span class="info-label">检查时间</span><span class="info-value" id="d-checktime"></span></div>
+      <div class="info-row"><span class="info-label">下次期限</span><span class="info-value" id="d-nextcheck"></span></div>
+      <div class="info-row" id="d-anomaly-row" style="display:none"><span class="info-label">异常记录</span><span class="info-value" id="d-anomaly" style="color:#c53030"></span></div>
+    </div>
+    <div class="info-card">
+      <h3>📍 位置追踪历史</h3>
+      <div class="timeline" id="d-timeline"></div>
+    </div>
+    <div class="info-card">
+      <h3>📸 现场媒体记录</h3>
+      <div class="media-grid" id="d-media"></div>
+    </div>
+    <button class="submit-btn" id="btn-check" style="margin:12px 0 0 0" onclick="goToCheckForm()">📝 发起新检查</button>
+    <button class="submit-btn" id="btn-qr" style="margin:8px 0 12px 0;background:linear-gradient(135deg,#276749,#38a169);box-shadow:0 4px 14px rgba(39,103,73,0.35)" onclick="showQRModal(currentDevice)">🔲 查看/打印二维码</button>
+  </div>
+</div>
+
+<!-- ===== 页面3：检查表单 ===== -->
+<div id="page-form" class="page">
+  <div class="detail-header" id="form-header">
+    <button class="back-btn" onclick="goBack('page-detail')">← 返回详情</button>
+    <div class="detail-device-name" id="form-device-name"></div>
+    <div class="detail-device-id" id="form-device-id"></div>
+  </div>
+  <div class="form-section">
+    <div class="form-section-title">📋 基本信息</div>
+    <div class="form-item"><label>检查人</label><input type="text" id="f-checker" placeholder="请输入姓名"></div>
+    <div class="form-item"><label>当前位置</label><input type="text" id="f-location" placeholder="如：手术室A / 展区B"></div>
+    <div class="form-item"><label>下次期限</label><input type="date" id="f-nextdate"></div>
+  </div>
+  <div class="form-section">
+    <div class="form-section-title">🔩 内部器件检查</div>
+    <div class="form-item">
+      <label>器件状态</label>
+      <div class="radio-group">
+        <button class="radio-btn" data-group="parts" data-val="齐全" data-cls="ok" onclick="selectRadio(this)">✅ 齐全</button>
+        <button class="radio-btn" data-group="parts" data-val="缺失" data-cls="error" onclick="selectRadio(this)">❌ 缺失</button>
+      </div>
+    </div>
+    <div class="form-item"><label>缺失明细</label><textarea id="f-parts-detail" placeholder="如缺失，描述具体器件..."></textarea></div>
+  </div>
+  <div class="form-section">
+    <div class="form-section-title">⚡ 功能检查</div>
+    <div class="form-item">
+      <label>功能状态</label>
+      <div class="radio-group">
+        <button class="radio-btn" data-group="func" data-val="正常" data-cls="ok" onclick="selectRadio(this)">✅ 正常</button>
+        <button class="radio-btn" data-group="func" data-val="异常" data-cls="error" onclick="selectRadio(this)">❌ 异常</button>
+      </div>
+    </div>
+    <div class="form-item"><label>异常描述</label><textarea id="f-func-detail" placeholder="如异常，描述具体问题..."></textarea></div>
+  </div>
+  <div class="form-section">
+    <div class="form-section-title">📸 现场媒体上传</div>
+    <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+      <div class="upload-icon">📷</div>
+      <p>点击上传图片 / 视频</p>
+      <small>支持 JPG、PNG、MP4，单文件最大 50MB</small>
+    </div>
+    <input type="file" id="file-input" multiple accept="image/*,video/*" style="display:none" onchange="handleFileSelect(event)">
+    <div class="upload-preview" id="upload-preview"></div>
+  </div>
+  <div class="form-section">
+    <div class="form-section-title">📝 备注</div>
+    <div class="form-item"><textarea id="f-note" placeholder="其他备注信息..." style="height:80px;width:100%"></textarea></div>
+  </div>
+  <button class="submit-btn" id="submit-btn" onclick="submitCheck()">提交检查记录</button>
+  <div style="height:32px"></div>
+</div>
+
+<div class="success-overlay" id="success-overlay">
+  <div class="success-card">
+    <div class="success-icon">✅</div>
+    <div class="success-title">检查记录已提交</div>
+    <div class="success-sub" id="success-sub">数据已同步</div>
+    <button class="success-close" onclick="afterSubmit()">查看详情</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="qr-modal" onclick="closeQRModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="qr-modal-title">设备二维码</div>
+    <div id="qrcode-container"></div>
+    <div class="qr-label" id="qr-label">扫码查看设备详情 · 发起检查</div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeQRModal()">关闭</button>
+      <button class="modal-btn primary" onclick="printQR()">🖨️ 打印二维码</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+// ============================================================
+// 分类配置
+// ============================================================
+const CATEGORIES = {
+  "t-teer": {
+    key: "t-teer",
+    label: "T-TEER 临床模拟器",
+    shortLabel: "T-TEER（临床）",
+    catClass: "cat-t-teer",
+    icon: "🏥",
+    color: "#1e3a5f",
+    count: 2,
+    idPrefix: "T-TEER",
+    defaultName: "T-TEER临床模拟器"
+  },
+  "m-teer": {
+    key: "m-teer",
+    label: "M-TEER 营销模拟器",
+    shortLabel: "M-TEER（营销）",
+    catClass: "cat-m-teer",
+    icon: "📊",
+    color: "#5f1e3a",
+    count: 14,
+    idPrefix: "M-TEER",
+    defaultName: "M-TEER营销模拟器"
+  }
+};
+
+// 当前分类（从URL读取）
+let currentCat = null;
+let devices = [];
+let currentDevice = null;
+let selectedFiles = [];
+const radioSelections = {};
+
+const STORE_KEY = "teer_asset_data_v3";
+
+// ============================================================
+// 初始化设备
+// ============================================================
+function createDefaultDevices(catKey) {
+  const cat = CATEGORIES[catKey];
+  const arr = [];
+  for (let i = 1; i <= cat.count; i++) {
+    const num = String(i).padStart(3, "0");
+    arr.push({
+      id: `${cat.idPrefix}-${num}`,
+      name: `${cat.defaultName} #${i}`,
+      model: "（待填写）",
+      sn: "（待填写）",
+      icon: cat.icon,
+      location: "（待填写）",
+      owner: "（待填写）",
+      category: catKey,
+      partsStatus: "unchecked",
+      funcStatus: "unchecked",
+      lastCheck: null,
+      nextCheck: null,
+      anomaly: "",
+      logs: [],
+      media: []
+    });
+  }
+  return arr;
+}
+
+function loadData() {
+  try {
+    const stored = localStorage.getItem(STORE_KEY);
+    if (stored) {
+      const all = JSON.parse(stored);
+      return all;
+    }
+  } catch(e) {}
+  return null;
+}
+
+function saveAllData(allData) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(allData));
+}
+
+function ensureDevices(catKey) {
+  let allData = loadData();
+  if (!allData) allData = {};
+  if (!allData[catKey]) {
+    allData[catKey] = createDefaultDevices(catKey);
+    saveAllData(allData);
+  }
+  return allData[catKey];
+}
+
+function saveCurrentDevices() {
+  let allData = loadData() || {};
+  allData[currentCat] = devices;
+  saveAllData(allData);
+}
+
+// ============================================================
+// URL路由
+// ============================================================
+function getCategoryFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const cat = params.get("cat");
+  if (cat && CATEGORIES[cat]) return cat;
+  const dev = params.get("device");
+  if (dev && dev.startsWith("T-TEER")) return "t-teer";
+  if (dev && dev.startsWith("M-TEER")) return "m-teer";
+  return null;
+}
+
+// ============================================================
+// 状态工具
+// ============================================================
+function getStatusClass(parts, func) {
+  if (parts === "unchecked" && func === "unchecked") return "status-unchecked";
+  if (parts === "缺失" || func === "异常") return "status-error";
+  if (parts === "齐全" && func === "正常") return "status-ok";
+  return "status-warn";
+}
+
+function getStatusDotClass(parts, func) {
+  if (parts === "unchecked" && func === "unchecked") return "";
+  if (parts === "缺失" || func === "异常") return "error";
+  if (parts === "齐全" && func === "正常") return "ok";
+  return "warn";
+}
+
+function getStatusText(parts, func) {
+  if (parts === "unchecked" && func === "unchecked") return "尚未检查";
+  const p = parts === "齐全" ? "器件齐全" : parts === "缺失" ? "⚠️器件缺失" : "";
+  const f = func === "正常" ? "功能正常" : func === "异常" ? "⚠️功能异常" : "";
+  return [p, f].filter(Boolean).join(" · ");
+}
+
+function statusBadge(status) {
+  const map = {
+    "齐全": `<span class="status-badge badge-ok">✅ 齐全</span>`,
+    "正常": `<span class="status-badge badge-ok">✅ 正常</span>`,
+    "缺失": `<span class="status-badge badge-error">❌ 缺失</span>`,
+    "异常": `<span class="status-badge badge-error">❌ 异常</span>`,
+    "unchecked": `<span class="status-badge badge-unchecked">⏳ 待检查</span>`
+  };
+  return map[status] || `<span class="status-badge badge-unchecked">${status}</span>`;
+}
+
+// ============================================================
+// 渲染列表
+// ============================================================
+function renderDeviceList() {
+  const cat = CATEGORIES[currentCat];
+  // 标题
+  const header = document.getElementById("list-header");
+  header.className = `header ${cat.catClass}`;
+  document.getElementById("list-title").textContent = `${cat.icon} ${cat.label}`;
+  document.getElementById("list-subtitle").textContent = `共 ${devices.length} 台 · 点击查看详情`;
+
+  // 统计
+  const ok = devices.filter(d => d.partsStatus === "齐全" && d.funcStatus === "正常").length;
+  const err = devices.filter(d => d.partsStatus === "缺失" || d.funcStatus === "异常").length;
+  const unc = devices.length - ok - err;
+  document.getElementById("stats-bar").innerHTML = `
+    <div class="stat-chip"><div class="stat-num green">${ok}</div><div class="stat-label">正常</div></div>
+    <div class="stat-chip"><div class="stat-num red">${err}</div><div class="stat-label">异常</div></div>
+    <div class="stat-chip"><div class="stat-num gray">${unc}</div><div class="stat-label">待检查</div></div>
+  `;
+
+  // 列表
+  const container = document.getElementById("device-list-container");
+  container.innerHTML = devices.map(d => {
+    const cls = getStatusClass(d.partsStatus, d.funcStatus);
+    const dotCls = getStatusDotClass(d.partsStatus, d.funcStatus);
+    const statusText = getStatusText(d.partsStatus, d.funcStatus);
+    const lastCheck = d.lastCheck ? `最近检查：${d.lastCheck}` : "尚未检查";
+    return `
+      <div class="device-card ${cls} ${cat.catClass}"
+        onclick="openDetail('${d.id}')"
+        ontouchstart="handleLongPress('${d.id}')" ontouchend="cancelLongPress()">
+        <div class="device-icon">${d.icon}</div>
+        <div class="device-info">
+          <div class="device-name">${d.name}</div>
+          <div class="device-id">${d.id} · ${d.model}</div>
+          <div class="device-status">
+            <div class="status-dot ${dotCls}"></div>
+            <span class="status-text">${statusText}</span>
+          </div>
+          <div class="last-check">${lastCheck}</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>`;
+  }).join('');
+}
+
+// ============================================================
+// 详情
+// ============================================================
+function openDetail(deviceId) {
+  currentDevice = devices.find(d => d.id === deviceId);
+  if (!currentDevice) return;
+  const cat = CATEGORIES[currentCat];
+
+  document.getElementById("detail-header").className = `detail-header ${cat.catClass}`;
+  document.getElementById("detail-name").textContent = currentDevice.name;
+  document.getElementById("detail-id").textContent = currentDevice.id + " · " + currentCat.toUpperCase().replace("-","-") ;
+  document.getElementById("d-assetno").textContent = currentDevice.id;
+  document.getElementById("d-category").textContent = cat.shortLabel;
+  document.getElementById("d-model").textContent = currentDevice.model;
+  document.getElementById("d-sn").textContent = currentDevice.sn;
+  document.getElementById("d-location").textContent = currentDevice.location;
+  document.getElementById("d-owner").textContent = currentDevice.owner;
+  document.getElementById("d-parts").innerHTML = statusBadge(currentDevice.partsStatus);
+  document.getElementById("d-func").innerHTML = statusBadge(currentDevice.funcStatus);
+  document.getElementById("d-checktime").textContent = currentDevice.lastCheck || "从未检查";
+  document.getElementById("d-nextcheck").textContent = currentDevice.nextCheck || "未设定";
+
+  const anomalyRow = document.getElementById("d-anomaly-row");
+  if (currentDevice.anomaly) {
+    anomalyRow.style.display = "flex";
+    document.getElementById("d-anomaly").textContent = currentDevice.anomaly;
+  } else {
+    anomalyRow.style.display = "none";
+  }
+
+  renderTimeline(currentDevice, cat);
+  renderMedia(currentDevice);
+
+  // 按钮着色
+  document.getElementById("btn-check").className = `submit-btn ${cat.catClass}`;
+  document.getElementById("btn-qr").className = `submit-btn ${cat.catClass}`;
+  document.getElementById("btn-qr").style.background = "linear-gradient(135deg,#276749,#38a169)";
+  document.getElementById("btn-qr").style.boxShadow = "0 4px 14px rgba(39,103,73,0.35)";
+
+  showPage("page-detail");
+}
+
+function renderTimeline(device, cat) {
+  const container = document.getElementById("d-timeline");
+  if (!device.logs || device.logs.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📍</div>暂无位置记录</div>`;
+    return;
+  }
+  const sorted = [...device.logs].reverse();
+  container.innerHTML = sorted.map(log => `
+    <div class="timeline-item ${cat.catClass}">
+      <div class="tl-dot"></div>
+      <div class="tl-content">
+        <div class="tl-location">📍 ${log.location || "位置未记录"}</div>
+        <div class="tl-time">${log.time}</div>
+        <div class="tl-checker">检查人：${log.checker || "—"}</div>
+        <div class="tl-status">${statusBadge(log.partsStatus)} ${statusBadge(log.funcStatus)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderMedia(device) {
+  const container = document.getElementById("d-media");
+  if (!device.media || device.media.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📷</div>暂无媒体记录</div>`;
+    return;
+  }
+  container.innerHTML = device.media.map((m, i) => {
+    if (m.type === "video") {
+      return `<div class="media-thumb" onclick="viewMedia(${i})"><video src="${m.data}" muted playsinline></video><div class="video-overlay">▶</div><div class="media-date">${m.time}</div></div>`;
+    }
+    return `<div class="media-thumb" onclick="viewMedia(${i})"><img src="${m.data}" alt="检查图片"><div class="media-date">${m.time}</div></div>`;
+  }).join('');
+}
+
+function viewMedia(index) {
+  if (!currentDevice || !currentDevice.media[index]) return;
+  const m = currentDevice.media[index];
+  const win = window.open();
+  win.document.write(`<style>body{margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;}</style>${m.type === "video" ? `<video src="${m.data}" controls autoplay style="max-width:100%;max-height:100vh;"></video>` : `<img src="${m.data}" style="max-width:100%;max-height:100vh;">`}`);
+}
+
+// ============================================================
+// 检查表单
+// ============================================================
+function goToCheckForm() {
+  if (!currentDevice) return;
+  const cat = CATEGORIES[currentCat];
+  document.getElementById("form-header").className = `detail-header ${cat.catClass}`;
+  document.getElementById("form-device-name").textContent = currentDevice.name;
+  document.getElementById("form-device-id").textContent = currentDevice.id;
+  document.getElementById("f-checker").value = "";
+  document.getElementById("f-location").value = currentDevice.location !== "（待填写）" ? currentDevice.location : "";
+  document.getElementById("f-parts-detail").value = "";
+  document.getElementById("f-func-detail").value = "";
+  document.getElementById("f-note").value = "";
+  document.getElementById("upload-preview").innerHTML = "";
+  selectedFiles = [];
+  const next = new Date(); next.setMonth(next.getMonth() + 3);
+  document.getElementById("f-nextdate").value = next.toISOString().split("T")[0];
+  document.querySelectorAll(".radio-btn").forEach(b => b.classList.remove("selected", "ok", "warn", "error"));
+  radioSelections["parts"] = null;
+  radioSelections["func"] = null;
+  document.getElementById("submit-btn").className = `submit-btn ${cat.catClass}`;
+  showPage("page-form");
+}
+
+function selectRadio(btn) {
+  const group = btn.dataset.group;
+  radioSelections[group] = btn.dataset.val;
+  document.querySelectorAll(`.radio-btn[data-group="${group}"]`).forEach(b => b.classList.remove("selected", "ok", "warn", "error"));
+  btn.classList.add("selected", btn.dataset.cls);
+}
+
+function handleFileSelect(event) {
+  Array.from(event.target.files).forEach(file => {
+    if (file.size > 50 * 1024 * 1024) { showToast("文件超过50MB限制"); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => { selectedFiles.push({ file, data: e.target.result, type: file.type.startsWith("video") ? "video" : "image" }); renderUploadPreview(); };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = "";
+}
+
+function renderUploadPreview() {
+  document.getElementById("upload-preview").innerHTML = selectedFiles.map((f, i) => `
+    <div class="preview-item">
+      ${f.type === "video" ? `<video src="${f.data}" muted></video>` : `<img src="${f.data}" alt="预览">`}
+      <div class="preview-type">${f.type === "video" ? "视频" : "图片"}</div>
+      <button class="remove-btn" onclick="removeFile(${i})">✕</button>
+    </div>`).join('');
+}
+
+function removeFile(index) { selectedFiles.splice(index, 1); renderUploadPreview(); }
+
+async function submitCheck() {
+  const checker = document.getElementById("f-checker").value.trim();
+  const location = document.getElementById("f-location").value.trim();
+  const partsStatus = radioSelections["parts"];
+  const funcStatus = radioSelections["func"];
+  if (!checker) { showToast("请填写检查人姓名"); return; }
+  if (!location) { showToast("请填写当前位置"); return; }
+  if (!partsStatus) { showToast("请选择器件检查结果"); return; }
+  if (!funcStatus) { showToast("请选择功能检查结果"); return; }
+
+  const btn = document.getElementById("submit-btn");
+  btn.disabled = true;
+  btn.innerHTML = `<span class="loading-spinner"></span> 提交中...`;
+
+  const now = new Date();
+  const timeStr = now.toLocaleString("zh-CN", { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+  const nextDate = document.getElementById("f-nextdate").value;
+  const partsDetail = document.getElementById("f-parts-detail").value.trim();
+  const funcDetail = document.getElementById("f-func-detail").value.trim();
+  const note = document.getElementById("f-note").value.trim();
+
+  const anomalyParts = [];
+  if (partsStatus === "缺失" && partsDetail) anomalyParts.push("器件缺失：" + partsDetail);
+  if (funcStatus === "异常" && funcDetail) anomalyParts.push("功能异常：" + funcDetail);
+
+  const mediaRecords = selectedFiles.map(f => ({ type: f.type, data: f.data, time: timeStr, checker }));
+  const logEntry = { time: timeStr, checker, location, partsStatus, partsDetail, funcStatus, funcDetail, nextCheck: nextDate, note, mediaCount: mediaRecords.length };
+
+  currentDevice.location = location;
+  currentDevice.owner = currentDevice.owner === "（待填写）" ? checker : currentDevice.owner;
+  currentDevice.partsStatus = partsStatus;
+  currentDevice.funcStatus = funcStatus;
+  currentDevice.lastCheck = timeStr;
+  currentDevice.nextCheck = nextDate;
+  currentDevice.anomaly = anomalyParts.join("\n") || "";
+  currentDevice.logs = currentDevice.logs || [];
+  currentDevice.logs.push(logEntry);
+  currentDevice.media = (currentDevice.media || []).concat(mediaRecords);
+
+  saveCurrentDevices();
+
+  await new Promise(r => setTimeout(r, 800));
+  btn.disabled = false;
+  btn.innerHTML = "提交检查记录";
+  document.getElementById("success-sub").textContent = `已记录 ${timeStr} 的检查数据`;
+  document.getElementById("success-overlay").classList.add("show");
+}
+
+function afterSubmit() {
+  document.getElementById("success-overlay").classList.remove("show");
+  openDetail(currentDevice.id);
+}
+
+// ============================================================
+// 二维码
+// ============================================================
+let currentQRDevice = null;
+
+function showQRModal(deviceOrId) {
+  let device = typeof deviceOrId === "object" ? deviceOrId : devices.find(d => d.id === deviceOrId);
+  if (!device) return;
+  currentQRDevice = device;
+
+  document.getElementById("qr-modal-title").textContent = `${device.icon} ${device.name}`;
+  const qrContainer = document.getElementById("qrcode-container");
+  qrContainer.innerHTML = "";
+  document.getElementById("qr-label").textContent = `${device.id} · 扫码查看详情/发起检查`;
+
+  const baseUrl = window.location.href.split("?")[0];
+  const qrUrl = `${baseUrl}?cat=${currentCat}&device=${device.id}`;
+
+  new QRCode(qrContainer, {
+    text: qrUrl,
+    width: 200, height: 200,
+    colorDark: CATEGORIES[currentCat].color,
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M
+  });
+
+  document.getElementById("qr-modal").classList.add("show");
+}
+
+function closeQRModal(event) {
+  if (!event || event.target === document.getElementById("qr-modal")) {
+    document.getElementById("qr-modal").classList.remove("show");
+  }
+}
+
+function printQR() {
+  if (!currentQRDevice) return;
+  const canvas = document.querySelector("#qrcode-container canvas");
+  if (!canvas) return;
+  const qrDataUrl = canvas.toDataURL();
+  const cat = CATEGORIES[currentCat];
+  const win = window.open("", "_blank");
+  win.document.write(`<!DOCTYPE html><html><head><title>二维码 - ${currentQRDevice.name}</title>
+    <style>@page{size:60mm 80mm;margin:0}body{font-family:'PingFang SC',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8mm}
+    .label{font-size:14px;font-weight:700;text-align:center;margin-bottom:4px}.id{font-size:11px;color:#555;text-align:center;margin-bottom:8px}
+    img{width:48mm;height:48mm;display:block}.scan-hint{font-size:9px;color:#888;text-align:center;margin-top:6px}.model{font-size:10px;color:#666;text-align:center}</style></head>
+    <body><div class="label">${currentQRDevice.icon} ${currentQRDevice.name}</div><div class="id">${currentQRDevice.id}</div><img src="${qrDataUrl}"><div class="model">${currentDevice.model}</div>
+    <div class="scan-hint">${cat.shortLabel} · 扫码查看详情/发起检查</div><script>window.onload=function(){window.print();}<\/script></body></html>`);
+  win.document.close();
+}
+
+// ============================================================
+// 导航
+// ============================================================
+function showPage(pageId) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(pageId).classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+function goBack(pageId) {
+  if (pageId === "page-list") renderDeviceList();
+  showPage(pageId);
+}
+
+let longPressTimer = null;
+function handleLongPress(id) { longPressTimer = setTimeout(() => showQRModal(id), 600); }
+function cancelLongPress() { if (longPressTimer) clearTimeout(longPressTimer); }
+
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+// ============================================================
+// 初始化
+// ============================================================
+function init() {
+  const catKey = getCategoryFromURL();
+  if (!catKey) {
+    // 没有分类参数 → 显示选择页
+    document.getElementById("page-list").innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;padding:32px;text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">🏥</div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">TEER模拟器资产管理</h2>
+        <p style="font-size:14px;color:#718096;margin-bottom:32px">请选择管理分类</p>
+        <a href="?cat=t-teer" style="display:block;width:240px;padding:18px;margin-bottom:16px;background:linear-gradient(135deg,#1e3a5f,#2d6a9f);color:white;border-radius:14px;text-decoration:none;font-size:16px;font-weight:600;box-shadow:0 4px 14px rgba(30,58,95,0.35)">🏥 T-TEER 临床模拟器</a>
+        <a href="?cat=m-teer" style="display:block;width:240px;padding:18px;margin-bottom:16px;background:linear-gradient(135deg,#5f1e3a,#9f2d6a);color:white;border-radius:14px;text-decoration:none;font-size:16px;font-weight:600;box-shadow:0 4px 14px rgba(95,30,58,0.35)">📊 M-TEER 营销模拟器</a>
+        <p style="font-size:12px;color:#a0aec0;margin-top:16px">扫描设备二维码可直接进入对应分类</p>
+      </div>`;
+    document.getElementById("page-list").classList.add("active");
+    return;
+  }
+
+  currentCat = catKey;
+  devices = ensureDevices(catKey);
+  renderDeviceList();
+
+  // 检查是否直接跳转设备
+  const params = new URLSearchParams(window.location.search);
+  const deviceId = params.get("device");
+  if (deviceId) {
+    const dev = devices.find(d => d.id === deviceId);
+    if (dev) { openDetail(deviceId); return; }
+  }
+
+  showPage("page-list");
+}
+
+init();
+</script>
+</body>
+</html>
