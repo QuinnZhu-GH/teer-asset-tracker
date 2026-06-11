@@ -417,6 +417,7 @@
       <div class="info-row"><span class="info-label">常规保管位置</span><span class="info-value" id="d-location"></span></div>
       <div class="info-row"><span class="info-label">常规保管人</span><span class="info-value" id="d-owner"></span></div>
       <div class="info-row" id="d-statusnote-row"><span class="info-label">状态备注</span><span class="info-value" id="d-statusnote" style="cursor:pointer;color:#2b6cb0" onclick="editStatusNote()">—</span></div>
+      <div class="info-row" id="d-refno-row" style="display:none"><span class="info-label">关联单号</span><span class="info-value" id="d-refno" style="color:#2b6cb0;font-weight:600"></span></div>
     </div>
     <div class="info-card">
       <h3>📡 当前状态</h3>
@@ -433,6 +434,11 @@
       <div class="info-row" id="d-clipfunc-row" style="display:none"><span class="info-label">瓣膜夹功能</span><span class="info-value" id="d-clipfunc" style="color:#9b2c2c;font-size:13px"></span></div>
       <div class="info-row"><span class="info-label">检查时间</span><span class="info-value" id="d-checktime"></span></div>
       <div class="info-row" id="d-anomaly-row" style="display:none"><span class="info-label">异常记录</span><span class="info-value" id="d-anomaly" style="color:#c53030"></span></div>
+    </div>
+    <div class="info-card" id="refno-card" style="display:none">
+      <h3>🔗 关联单号追踪</h3>
+      <div id="d-refno-card-content" style="font-size:14px;color:#2b6cb0;font-weight:600;margin-bottom:8px"></div>
+      <button class="submit-btn" style="background:linear-gradient(135deg,#805ad5,#9f7aea);box-shadow:0 4px 14px rgba(128,90,213,0.3);padding:10px;font-size:14px;width:100%;margin:0" onclick="trackRefNo()">🔍 查询单号状态</button>
     </div>
     <div class="info-card">
       <h3>📍 位置追踪历史</h3>
@@ -491,6 +497,7 @@
     <div class="form-section-title">📋 基本信息</div>
     <div class="form-item"><label>检查人</label><input type="text" id="f-checker" placeholder="请输入姓名" oninput="updateSubmitBtnState()"></div>
     <div class="form-item"><label>当前位置</label><input type="text" id="f-location" placeholder="如：手术室A / 展区B" oninput="updateSubmitBtnState()"></div>
+    <div class="form-item"><label>关联单号 <span style="color:#a0aec0;font-size:12px;font-weight:400">（选填）</span></label><input type="text" id="f-refno" placeholder="如：PO-2024-001 / 项目编号"></div>
   </div>
   <div class="form-section">
     <div class="form-section-title">🔩 器件检查</div>
@@ -673,6 +680,7 @@ const DEVICE_PRESETS = {
 let currentCat = null;
 let devices = [];
 let currentDevice = null;
+let currentRefNo = "";
 let selectedFiles = [];
 const radioSelections = {};
 
@@ -1034,6 +1042,22 @@ function openDetail(deviceId) {
   }
   document.getElementById("d-checktime").textContent = currentDevice.lastCheck || "从未检查";
 
+  // 关联单号（从最新一条log取）
+  const refNoRow = document.getElementById("d-refno-row");
+  const latestLog = currentDevice.logs && currentDevice.logs.length > 0 ? currentDevice.logs[currentDevice.logs.length - 1] : null;
+  if (latestLog && latestLog.refNo) {
+    refNoRow.style.display = "flex";
+    document.getElementById("d-refno").textContent = latestLog.refNo;
+    // 显示关联单号追踪卡片
+    document.getElementById("refno-card").style.display = "block";
+    document.getElementById("d-refno-card-content").textContent = latestLog.refNo;
+    currentRefNo = latestLog.refNo;
+  } else {
+    refNoRow.style.display = "none";
+    document.getElementById("refno-card").style.display = "none";
+    currentRefNo = "";
+  }
+
   const anomalyRow = document.getElementById("d-anomaly-row");
   if (currentDevice.anomaly) {
     anomalyRow.style.display = "flex";
@@ -1269,6 +1293,7 @@ function goToCheckForm() {
   document.getElementById("form-device-id").textContent = currentDevice.id;
   document.getElementById("f-checker").value = "";
   document.getElementById("f-location").value = currentDevice.location || "";
+  document.getElementById("f-refno").value = "";
   document.getElementById("f-note").value = "";
   document.getElementById("upload-preview").innerHTML = "";
   document.getElementById("clipfunc-section").style.display = "none";
@@ -1396,9 +1421,9 @@ async function submitCheck() {
 
   const now = new Date();
   const timeStr = now.toLocaleString("zh-CN", { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
-  const nextDate = "";
   const clipfuncOther = document.getElementById("f-clipfunc-other") ? document.getElementById("f-clipfunc-other").value.trim() : "";
   const note = document.getElementById("f-note").value.trim();
+  const refNo = document.getElementById("f-refno").value.trim();
 
   // 构建异常记录
   const anomalyParts = [];
@@ -1423,7 +1448,7 @@ async function submitCheck() {
     await saveMediaBlob(blobKey, fileBlob);
     mediaRecords.push({ type: f.type, time: timeStr, checker, blobKey });
   }
-  const logEntry = { time: timeStr, checker, location, dilator, heartmodel, guidesheath, clip, clipfunc, clipfuncOther, nextCheck: nextDate, note, mediaCount: mediaRecords.length };
+  const logEntry = { time: timeStr, checker, location, refNo, dilator, heartmodel, guidesheath, clip, clipfunc, clipfuncOther, nextCheck: "", note, mediaCount: mediaRecords.length };
 
   currentDevice.location = location;
   currentDevice.owner = currentDevice.owner || checker;
@@ -1452,6 +1477,13 @@ async function submitCheck() {
 function afterSubmit() {
   document.getElementById("success-overlay").classList.remove("show");
   openDetail(currentDevice.id);
+}
+
+function trackRefNo() {
+  if (!currentRefNo) { showToast("暂无关联单号"); return; }
+  // 打开快递100搜索该单号（通用查询）
+  const url = `https://www.kuaidi100.com/?coname=${encodeURIComponent(currentRefNo)}`;
+  window.open(url, "_blank");
 }
 
 // ============================================================
@@ -1499,6 +1531,7 @@ function renderRecordsList() {
       </div>
       <div class="record-body">
         <div class="record-field"><span class="record-field-label">📍 位置</span><span class="record-field-value">${log.location || "—"}</span></div>
+        ${log.refNo ? `<div class="record-field"><span class="record-field-label">🔗 关联单号</span><span class="record-field-value" style="color:#2b6cb0;font-weight:600">${log.refNo}</span></div>` : ""}
         <div class="record-field"><span class="record-field-label">扩张鞘</span><span class="record-field-value">${yn(log.dilator)}</span></div>
         <div class="record-field"><span class="record-field-label">心脏模型</span><span class="record-field-value">${yn(log.heartmodel)}</span></div>
         <div class="record-field"><span class="record-field-label">导引鞘</span><span class="record-field-value">${yn(log.guidesheath)}</span></div>
@@ -1532,6 +1565,7 @@ function openEditRecordModal(idx) {
     <div class="edit-field"><label>检查时间</label><input type="text" id="edit-time" value="${log.time || ''}"></div>
     <div class="edit-field"><label>检查人</label><input type="text" id="edit-checker" value="${log.checker || ''}"></div>
     <div class="edit-field"><label>位置</label><input type="text" id="edit-location" value="${log.location || ''}"></div>
+    <div class="edit-field"><label>关联单号</label><input type="text" id="edit-refno" value="${log.refNo || ''}"></div>
     <div class="edit-field"><label>扩张鞘</label>${yn("dilator", log.dilator)}</div>
     <div class="edit-field"><label>心脏模型</label>${yn("heartmodel", log.heartmodel)}</div>
     <div class="edit-field"><label>导引鞘</label>${yn("guidesheath", log.guidesheath)}</div>
@@ -1554,6 +1588,7 @@ function saveEditRecord() {
   log.time = document.getElementById("edit-time").value.trim();
   log.checker = document.getElementById("edit-checker").value.trim();
   log.location = document.getElementById("edit-location").value.trim();
+  log.refNo = document.getElementById("edit-refno").value.trim();
   log.dilator = document.getElementById("edit-dilator").value;
   log.heartmodel = document.getElementById("edit-heartmodel").value;
   log.guidesheath = document.getElementById("edit-guidesheath").value;
