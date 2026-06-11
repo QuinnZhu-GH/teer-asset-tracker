@@ -158,9 +158,11 @@
   }
   .media-thumb .media-date {
     position: absolute; bottom: 0; left: 0; right: 0;
-    background: rgba(0,0,0,0.5); color: white;
-    font-size: 10px; padding: 3px 5px; text-align: center;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    color: white; font-size: 11px; padding: 12px 5px 4px; text-align: center;
   }
+  .media-thumb .media-date .media-time { font-weight: 600; display: block; }
+  .media-thumb .media-date .media-checker { font-size: 10px; opacity: 0.85; display: block; }
 
   /* 表单 */
   .form-section {
@@ -1159,9 +1161,9 @@ async function renderMedia(device) {
     }
     if (!url) { items.push(`<div class="media-thumb"><div style="display:flex;align-items:center;justify-content:center;height:100%;color:#a0aec0;font-size:12px;">加载失败</div></div>`); continue; }
     if (m.type === "video") {
-      items.push(`<div class="media-thumb" onclick="viewMedia(${i})"><video src="${url}" muted playsinline></video><div class="video-overlay">▶</div><div class="media-date">${m.time}</div></div>`);
+      items.push(`<div class="media-thumb" onclick="viewMedia(${i})"><video src="${url}" muted playsinline></video><div class="video-overlay">▶</div><div class="media-date"><span class="media-time">${m.time || ''}</span>${m.checker ? `<span class="media-checker">${m.checker}</span>` : ''}</div></div>`);
     } else {
-      items.push(`<div class="media-thumb" onclick="viewMedia(${i})"><img src="${url}" alt="检查图片"><div class="media-date">${m.time}</div></div>`);
+      items.push(`<div class="media-thumb" onclick="viewMedia(${i})"><img src="${url}" alt="检查图片"><div class="media-date"><span class="media-time">${m.time || ''}</span>${m.checker ? `<span class="media-checker">${m.checker}</span>` : ''}</div></div>`);
     }
   }
   container.innerHTML = items.join('');
