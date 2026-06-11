@@ -1132,9 +1132,17 @@ function init() {
   // 检查是否直接跳转设备
   const params = new URLSearchParams(window.location.search);
   const deviceId = params.get("device");
+  const action = params.get("action");
   if (deviceId) {
     const dev = devices.find(d => d.id === deviceId);
-    if (dev) { openDetail(deviceId); return; }
+    if (dev) {
+      openDetail(deviceId);
+      // 实物标签码扫码 → 自动打开检查表单
+      if (action === "inspect") {
+        setTimeout(() => goToCheckForm(), 300);
+      }
+      return;
+    }
   }
 
   showPage("page-list");
