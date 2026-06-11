@@ -1,1 +1,218 @@
-<stdin>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TEER模拟器二维码打印册</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #f5f5f5; padding: 20px;
+  }
+  .print-controls {
+    background: white; border-radius: 12px; padding: 20px;
+    margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .print-controls h1 { font-size: 18px; color: #1a202c; }
+  .print-controls p { font-size: 13px; color: #718096; margin-top: 4px; }
+  .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    padding: 10px 20px; border-radius: 8px; border: none;
+    font-size: 14px; cursor: pointer; font-family: inherit;
+    font-weight: 500; transition: all 0.15s;
+  }
+  .btn-primary { background: #1e3a5f; color: white; }
+  .btn-primary:hover { background: #2d6a9f; }
+  .btn-tteer { background: #1e3a5f; color: white; }
+  .btn-mteer { background: #5f1e3a; color: white; }
+  .btn-secondary { background: #edf2f7; color: #1a202c; }
+
+  .url-input-wrap {
+    background: white; border-radius: 12px; padding: 16px 20px;
+    margin-bottom: 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  .url-input-wrap label { font-size: 13px; color: #718096; display: block; margin-bottom: 8px; }
+  .url-input-wrap input {
+    width: 100%; padding: 10px 12px;
+    border: 1.5px solid #e2e8f0; border-radius: 8px;
+    font-size: 14px; outline: none; font-family: monospace;
+  }
+  .url-input-wrap input:focus { border-color: #2d6a9f; }
+  .url-note { font-size: 12px; color: #a0aec0; margin-top: 6px; }
+
+  .section-divider {
+    display: flex; align-items: center; gap: 16px;
+    margin: 32px 0 16px; padding: 0 4px;
+  }
+  .section-divider h2 { font-size: 16px; white-space: nowrap; }
+  .section-divider.t-teer h2 { color: #1e3a5f; }
+  .section-divider.m-teer h2 { color: #5f1e3a; }
+  .section-divider::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(to right, #e2e8f0, transparent);
+  }
+  .section-count {
+    font-size: 12px; color: #718096;
+    background: #f7fafc; padding: 3px 10px; border-radius: 12px;
+    white-space: nowrap;
+  }
+
+  .qr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+    gap: 14px;
+  }
+  .qr-card {
+    background: white; border-radius: 12px;
+    padding: 18px 14px; text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+  }
+  .qr-card.t-teer { border-top: 3px solid #1e3a5f; }
+  .qr-card.m-teer { border-top: 3px solid #5f1e3a; }
+  .qr-device-icon { font-size: 24px; margin-bottom: 4px; }
+  .qr-device-name { font-size: 14px; font-weight: 600; color: #1a202c; margin-bottom: 2px; }
+  .qr-device-id { font-size: 12px; color: #718096; margin-bottom: 3px; }
+  .qr-cat-label {
+    display: inline-block; font-size: 10px; padding: 2px 8px;
+    border-radius: 10px; margin-bottom: 10px;
+  }
+  .qr-cat-label.t-teer { background: #ebf8ff; color: #1e3a5f; }
+  .qr-cat-label.m-teer { background: #fce7f3; color: #5f1e3a; }
+  .qr-code-wrap { display: flex; justify-content: center; margin-bottom: 8px; }
+  .qr-hint { font-size: 10px; color: #a0aec0; line-height: 1.4; }
+  .qr-separator { border-top: 1px dashed #e2e8f0; margin: 8px 0; }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .print-controls, .url-input-wrap { display: none; }
+    .section-divider { margin: 16px 0 10px; }
+    .qr-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .qr-card { break-inside: avoid; page-break-inside: avoid; padding: 10px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="print-controls">
+  <div>
+    <h1>🔲 TEER模拟器二维码打印册</h1>
+    <p>打印后贴在对应设备上，扫码即可查看状态 · 上传图片视频</p>
+  </div>
+  <div class="btn-group">
+    <button class="btn btn-secondary" onclick="generateAll()">🔄 刷新二维码</button>
+    <button class="btn btn-tteer" onclick="printCategory('t-teer')">🖨️ 仅打印 T-TEER</button>
+    <button class="btn btn-mteer" onclick="printCategory('m-teer')">🖨️ 仅打印 M-TEER</button>
+    <button class="btn btn-primary" onclick="window.print()">🖨️ 打印全部</button>
+  </div>
+</div>
+
+<div class="url-input-wrap">
+  <label>📡 H5系统访问地址（部署后自动填入，无需修改）</label>
+  <input type="url" id="base-url" placeholder="例如：https://your-name.github.io/teer-asset-tracker/" value="">
+  <div class="url-note">⚠️ 提示：将 index.html 部署到 GitHub Pages 后，在此填入URL并点击"刷新二维码"。<br>二维码中会嵌入 ?cat=t-teer&device=T-TEER-001 等参数，扫码直跳对应设备。</div>
+</div>
+
+<!-- T-TEER 区 -->
+<div class="section-divider t-teer" id="section-t-teer">
+  <h2>🏥 T-TEER 临床模拟器</h2>
+  <span class="section-count" id="t-teer-count">2 台</span>
+</div>
+<div class="qr-grid" id="grid-t-teer"></div>
+
+<!-- M-TEER 区 -->
+<div class="section-divider m-teer" id="section-m-teer">
+  <h2>📊 M-TEER 营销模拟器</h2>
+  <span class="section-count" id="m-teer-count">14 台</span>
+</div>
+<div class="qr-grid" id="grid-m-teer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+const CATEGORIES = {
+  "t-teer": {
+    key: "t-teer", label: "T-TEER 临床模拟器", icon: "🏥",
+    color: "#1e3a5f", count: 2, idPrefix: "T-TEER", defaultName: "T-TEER临床模拟器"
+  },
+  "m-teer": {
+    key: "m-teer", label: "M-TEER 营销模拟器", icon: "📊",
+    color: "#5f1e3a", count: 14, idPrefix: "M-TEER", defaultName: "M-TEER营销模拟器"
+  }
+};
+
+function createDevices(catKey) {
+  const cat = CATEGORIES[catKey];
+  const arr = [];
+  for (let i = 1; i <= cat.count; i++) {
+    const num = String(i).padStart(3, "0");
+    arr.push({ id: `${cat.idPrefix}-${num}`, name: `${cat.defaultName} #${i}`, icon: cat.icon });
+  }
+  return arr;
+}
+
+function generateCategory(catKey) {
+  let baseUrl = document.getElementById("base-url").value.trim();
+  if (!baseUrl) baseUrl = window.location.href.replace("qr-print.html", "index.html");
+  baseUrl = baseUrl.split("?")[0];
+
+  const cat = CATEGORIES[catKey];
+  const devices = createDevices(catKey);
+  const grid = document.getElementById(`grid-${catKey}`);
+  grid.innerHTML = "";
+
+  document.getElementById(`${catKey}-count`).textContent = `${devices.length} 台`;
+
+  devices.forEach(device => {
+    const url = `${baseUrl}?cat=${catKey}&device=${device.id}`;
+    const card = document.createElement("div");
+    card.className = `qr-card ${catKey}`;
+    card.innerHTML = `
+      <div class="qr-device-icon">${device.icon}</div>
+      <div class="qr-device-name">${device.name}</div>
+      <div class="qr-device-id">${device.id}</div>
+      <span class="qr-cat-label ${catKey}">${cat.label}</span>
+      <div class="qr-code-wrap" id="qr-${device.id}"></div>
+      <div class="qr-separator"></div>
+      <div class="qr-hint">扫码查看状态 · 发起检查<br>上传图片 / 视频</div>
+    `;
+    grid.appendChild(card);
+
+    new QRCode(document.getElementById(`qr-${device.id}`), {
+      text: url,
+      width: 140, height: 140,
+      colorDark: cat.color,
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  });
+}
+
+function generateAll() {
+  generateCategory("t-teer");
+  generateCategory("m-teer");
+}
+
+function printCategory(catKey) {
+  // 隐藏另一个分类
+  const otherCat = catKey === "t-teer" ? "m-teer" : "t-teer";
+  const otherSection = document.getElementById(`section-${otherCat}`);
+  const otherGrid = document.getElementById(`grid-${otherCat}`);
+  const thisSection = document.getElementById(`section-${catKey}`);
+  const thisGrid = document.getElementById(`grid-${catKey}`);
+
+  otherSection.style.display = "none";
+  otherGrid.style.display = "none";
+
+  window.print();
+
+  otherSection.style.display = "";
+  otherGrid.style.display = "";
+}
+
+generateAll();
+</script>
+</body>
+</html>
