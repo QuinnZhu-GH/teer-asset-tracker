@@ -1338,19 +1338,29 @@ function ensureDevices(catKey) {
         d.needRepair = preset.repair;
         d.presetNote = preset.note;
 
-        // 仅当用户未手动设置过useStatus时，才自动推断
-        // 用户在管理面板上修改过的状态优先级最高，不会被覆盖
+        // useStatus 优先级（从高到低）：
+        //   1. 用户在管理面板手动设置过 (_statusManualSet=true) → 永不覆盖
+        //   2. 有检查记录 + 最新位置≠保管地 → 自动标记"调用中"
+        //   3. 其他情况（无记录 / 在保管地 / 首次初始化）→ 使用预设值 preset.status
         const latestLoc = getLatestLocation(d);
         if (latestLoc && latestLoc.trim()) {
-          // 同步location为最新位置
           d.location = latestLoc;
-          // 核心规则：只在 useStatus 为空时才自动推断，已有值（含预设值）一律保留
-          if (!d._statusManualSet && !d.useStatus) {
+        }
+        if (!d._statusManualSet) {
+          // 用户没手动改过 → 按规则推断
+          if (latestLoc && latestLoc.trim()) {
             const atHomeBase = latestLoc.includes(preset.location) || (preset.location.includes(latestLoc));
-            d.useStatus = (atHomeBase || isWarehouseDevice(d)) ? '保管地' : '调用中';
+            // 只有明确不在保管地时才强制为"调用中"，其他情况用预设值
+            if (!atHomeBase && !isWarehouseDevice(d)) {
+              d.useStatus = '调用中';
+            } else {
+              // 在保管地或仓库 → 用预设值（可能是"调用中"如跨区调用场景）
+              d.useStatus = preset.status || '保管地';
+            }
+          } else {
+            // 无位置信息 → 直接用预设值
+            d.useStatus = preset.status || '保管地';
           }
-        } else if (!d._statusManualSet && !d.useStatus) {
-          d.useStatus = preset.status;
         }
       }
     });
@@ -1614,9 +1624,16 @@ function openDetail(deviceId) {
     var cat = CATEGORIES[currentCat];
     if (!cat) { alert('未找到分类: ' + currentCat); return; }
 
-  document.getElementById("detail-header").className = `detail-header ${cat.catClass}`;
-  document.getElementById("detail-name").textContent = currentDevice.name;
-  document.getElementById("detail-id").textContent = currentDevice.id + " · " + (currentDevice.region || '');
+    // 安全辅助函数：获取元素，null时记录到debug bar
+    function $(id) {
+      var el = document.getElementById(id);
+      if (!el && dbg) dbg.textContent = '⚠️ 缺少元素: #' + id;
+      return el;
+    }
+
+    $("detail-header").className = `detail-header ${cat.catClass}`;
+    $("detail-name").textContent = currentDevice.name;
+    $("detail-id").textContent = currentDevice.id + " · " + (currentDevice.region || '');
 
   // ===== 主信息条：状态（可点击切换）+ 位置 =====
   const STATUS_OPTIONS = [
@@ -1629,7 +1646,8 @@ function openDetail(deviceId) {
   const us = STATUS_OPTIONS.find(s => s.val === currentStatus) || STATUS_OPTIONS[0];
 
   // 渲染状态选择器
-  document.getElementById("ps-status-pill").innerHTML = `
+  var elPill = $("ps-status-pill");
+  if (elPill) elPill.innerHTML = `
     <div class="ps-status-pill ${us.cls}" onclick="toggleStatusMenu(event)" id="status-selector">
       <span id="status-current">${us.text}</span>
       <span style="margin-left:6px;font-size:11px;opacity:0.7">▼</span>
@@ -1646,40 +1664,47 @@ function openDetail(deviceId) {
       ).join('')}
     </div>
   `;
-  document.getElementById("ps-status-sub").textContent = us.sub;
+  var elSub = $("ps-status-sub");
+  if (elSub) elSub.textContent = us.sub;
 
   // 维修标记
-  const repairTag = document.getElementById("ps-repair-tag");
-  if (currentDevice.needRepair) {
-    repairTag.innerHTML = `<div class="ps-repair-tag">🔧 待维修</div>`;
-    repairTag.style.display = "block";
-  } else {
-    repairTag.style.display = "none";
+  var repairTag = $("ps-repair-tag");
+  if (repairTag) {
+    if (currentDevice.needRepair) {
+      repairTag.innerHTML = `<div class="ps-repair-tag">🔧 待维修</div>`;
+      repairTag.style.display = "block";
+    } else {
+      repairTag.style.display = "none";
+    }
   }
 
   // 位置
-  document.getElementById("ps-loc-name").innerHTML = `📍 ${currentDevice.location || '未知'}`;
-  const subParts = [currentDevice.region, currentDevice.owner].filter(Boolean);
-  document.getElementById("ps-loc-sub").textContent = subParts.join(' · ') || '—';
+  var locName = $("ps-loc-name");
+  if (locName) locName.innerHTML = `📍 ${currentDevice.location || '未知'}`;
+  var subParts = [currentDevice.region, currentDevice.owner].filter(Boolean);
+  var locSub = $("ps-loc-sub");
+  if (locSub) locSub.textContent = subParts.join(' · ') || '—';
 
   // 备注（可点击编辑）
-  const noteEl = document.getElementById("ps-note");
-  const noteText = currentDevice.statusNote || (currentDevice.needRepair ? currentDevice.presetNote : "");
-  if (noteText && noteText.trim()) {
-    noteEl.style.display = "block";
-    noteEl.innerHTML = `<span id="ps-note-text">${noteText}</span><span style="font-size:11px;color:#b7791f;margin-left:6px;cursor:pointer" onclick="editStatusNote()">✏️</span>`;
-  } else {
-    noteEl.style.display = "block";
-    noteEl.innerHTML = `<span style="color:#b7791f;font-style:italic;cursor:pointer" onclick="editStatusNote()">+ 点击添加备注</span>`;
+  var noteEl = $("ps-note");
+  if (noteEl) {
+    const noteText = currentDevice.statusNote || (currentDevice.needRepair ? currentDevice.presetNote : "");
+    if (noteText && noteText.trim()) {
+      noteEl.style.display = "block";
+      noteEl.innerHTML = `<span id="ps-note-text">${noteText}</span><span style="font-size:11px;color:#b7791f;margin-left:6px;cursor:pointer" onclick="editStatusNote()">✏️</span>`;
+    } else {
+      noteEl.style.display = "block";
+      noteEl.innerHTML = `<span style="color:#b7791f;font-style:italic;cursor:pointer" onclick="editStatusNote()">+ 点击添加备注</span>`;
+    }
   }
 
   // ===== 管理备注折叠区 =====
-  const adminSection = document.getElementById("admin-note-section");
+  var adminSection = $("admin-note-section");
   const hasDNote = (currentDevice.presetNote && currentDevice.presetNote.trim()) ||
                    (currentDevice.statusNote && currentDevice.statusNote.trim()) ||
                    currentDevice.needRepair ||
                    (currentDevice.shipping && currentDevice.shipping.trackingNo);
-  if (hasDNote) {
+  if (hasDNote && adminSection) {
     adminSection.style.display = "block";
     let dNoteHtml = "";
     if (currentDevice.presetNote && currentDevice.presetNote.trim()) {
@@ -1696,24 +1721,26 @@ function openDetail(deviceId) {
       const carrierName = CARRIER_NAMES[s.carrier] || s.carrier;
       dNoteHtml += `<div style="font-size:12px;color:#6b46c1;padding:4px 0;margin-top:2px">📦 ${carrierName} ${s.trackingNo}${s.status === 'delivered' ? ' (已签收)' : ' (运输中)'}</div>`;
     }
-    document.getElementById("d-admin-note-content").innerHTML = dNoteHtml;
-  } else {
+    var adminContent = $("d-admin-note-content");
+    if (adminContent) adminContent.innerHTML = dNoteHtml;
+  } else if (adminSection) {
     adminSection.style.display = "none";
   }
 
   // ===== 器件状态仪表盘（折叠区内） =====
-  const yn = v => v === "有" ? "ok" : v === "无" ? "err" : "mute";
-  const ynText = v => v === "有" ? "✅ 正常" : v === "无" ? "❌ 缺失" : "— 待检";
-  let clipfuncText = "";
+  var yn = function(v) { return v === "有" ? "ok" : v === "无" ? "err" : "mute"; };
+  var ynText = function(v) { return v === "有" ? "✅ 正常" : v === "无" ? "❌ 缺失" : "— 待检"; };
+  var clipfuncText = "";
   if (currentDevice.clip === "有" && currentDevice.clipfunc && currentDevice.clipfunc.length > 0) {
-    const labels = currentDevice.clipfunc.map(v => v === "其他" && currentDevice.clipfuncOther ? "其他：" + currentDevice.clipfuncOther : v);
-    const hasIssue = !currentDevice.clipfunc.includes("可用");
+    var labels = currentDevice.clipfunc.map(function(v) { return v === "其他" && currentDevice.clipfuncOther ? "其他：" + currentDevice.clipfuncOther : v; });
+    var hasIssue = currentDevice.clipfunc.indexOf("可用") < 0;
     clipfuncText = hasIssue
       ? `<div class="sd-item" style="grid-column:1/-1"><div class="sd-icon">⚡</div><div class="sd-info"><div class="sd-label">瓣膜夹功能</div><div class="sd-val err">${labels.join("、")}</div></div></div>`
       : `<div class="sd-item" style="grid-column:1/-1"><div class="sd-icon">⚡</div><div class="sd-info"><div class="sd-label">瓣膜夹功能</div><div class="sd-val ok">✅ ${labels.join("、")}</div></div></div>`;
   }
-  const lastCheckTime = currentDevice.lastCheck || "从未检查";
-  document.getElementById("d-status-dashboard").innerHTML = `
+  var lastCheckTime = currentDevice.lastCheck || "从未检查";
+  var dashboard = $("d-status-dashboard");
+  if (dashboard) dashboard.innerHTML = `
     <div class="sd-item"><div class="sd-icon">🔧</div><div class="sd-info"><div class="sd-label">扩张鞘</div><div class="sd-val ${yn(currentDevice.dilator)}">${ynText(currentDevice.dilator)}</div></div></div>
     <div class="sd-item"><div class="sd-icon">❤️</div><div class="sd-info"><div class="sd-label">心脏模型</div><div class="sd-val ${yn(currentDevice.heartmodel)}">${ynText(currentDevice.heartmodel)}</div></div></div>
     <div class="sd-item"><div class="sd-icon">📏</div><div class="sd-info"><div class="sd-label">导引鞘</div><div class="sd-val ${yn(currentDevice.guidesheath)}">${ynText(currentDevice.guidesheath)}</div></div></div>
@@ -1723,16 +1750,16 @@ function openDetail(deviceId) {
   `;
 
   // ===== 关联单号（折叠区） =====
-  const latestLog = currentDevice.logs && currentDevice.logs.length > 0 ? currentDevice.logs[currentDevice.logs.length - 1] : null;
-  const refSection = document.getElementById("refno-section");
-  if (latestLog && latestLog.refNo) {
+  var latestLog = currentDevice.logs && currentDevice.logs.length > 0 ? currentDevice.logs[currentDevice.logs.length - 1] : null;
+  var refSection = $("refno-section");
+  if (latestLog && latestLog.refNo && refSection) {
     refSection.style.display = "block";
-    document.getElementById("d-refno-card-content").textContent = latestLog.refNo;
+    var refContent = $("d-refno-card-content");
+    if (refContent) refContent.textContent = latestLog.refNo;
     currentRefNo = latestLog.refNo;
-  } else {
+  } else if (refSection) {
     refSection.style.display = "none";
     currentRefNo = "";
-  }
 
   // ===== 时间线 + 媒体 + 快递 =====
   renderTimeline(currentDevice, cat);
@@ -1740,7 +1767,8 @@ function openDetail(deviceId) {
   renderShipping(currentDevice);
 
   // 按钮样式
-  document.getElementById("btn-check").className = `submit-btn ${cat.catClass}`;
+  var btnCheck = $("btn-check");
+  if (btnCheck) btnCheck.className = `submit-btn ${cat.catClass}`;
 
   if (dbg) dbg.textContent = '✅ ' + currentDevice.name + ' (' + deviceId + ') 渲染完成';
 
