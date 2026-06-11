@@ -337,8 +337,6 @@
       <h3>📋 基本信息</h3>
       <div class="info-row"><span class="info-label">资产编号</span><span class="info-value" id="d-assetno"></span></div>
       <div class="info-row"><span class="info-label">分类</span><span class="info-value" id="d-category"></span></div>
-      <div class="info-row"><span class="info-label">型号规格</span><span class="info-value" id="d-model"></span></div>
-      <div class="info-row"><span class="info-label">序列号</span><span class="info-value" id="d-sn"></span></div>
       <div class="info-row"><span class="info-label">所属区域</span><span class="info-value" id="d-region"></span></div>
       <div class="info-row"><span class="info-label">常规保管位置</span><span class="info-value" id="d-location"></span></div>
       <div class="info-row"><span class="info-label">常规保管人</span><span class="info-value" id="d-owner"></span></div>
@@ -519,8 +517,6 @@ function createDefaultDevices(catKey) {
     arr.push({
       id: id,
       name: `${cat.defaultName} #${i}`,
-      model: "",
-      sn: "",
       icon: cat.icon,
       location: preset.location || "",
       region: preset.region || "",
@@ -695,8 +691,6 @@ function openDetail(deviceId) {
   document.getElementById("detail-id").textContent = currentDevice.id + " · " + currentCat.toUpperCase().replace("-","-") ;
   document.getElementById("d-assetno").textContent = currentDevice.id;
   document.getElementById("d-category").textContent = cat.shortLabel;
-  document.getElementById("d-model").textContent = currentDevice.model || "—";
-  document.getElementById("d-sn").textContent = currentDevice.sn || "—";
   document.getElementById("d-region").textContent = currentDevice.region || "—";
   document.getElementById("d-location").textContent = currentDevice.location || "—";
   document.getElementById("d-owner").textContent = currentDevice.owner || "—";
