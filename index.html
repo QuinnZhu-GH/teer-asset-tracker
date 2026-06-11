@@ -15,141 +15,84 @@
   .page { display: none; }
   .page.active { display: block; }
 
-  /* ===== 汇报风格全局 ===== */
-  .report-header {
-    color: white; padding: 24px 20px 20px;
+  /* ===== 总览页 - 极简时间线风格 ===== */
+  .list-header {
+    color: white; padding: 20px 20px 16px;
     position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   }
-  .report-header.cat-t-teer { background: linear-gradient(135deg, #0f2b44 0%, #1e5a8a 50%, #2d6a9f 100%); }
-  .report-header.cat-m-teer { background: linear-gradient(135deg, #3d0f24 0%, #7a2248 50%, #9f2d6a 100%); }
-  .report-header .rh-top { display: flex; justify-content: space-between; align-items: flex-start; }
-  .report-header .rh-title { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
-  .report-header .rh-date { font-size: 12px; opacity: 0.7; margin-top: 4px; }
-  .report-header .rh-badge {
-    background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);
-    padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  .list-header.cat-t-teer { background: #1a365d; }
+  .list-header.cat-m-teer { background: #553c9a; }
+  .lh-row { display: flex; justify-content: space-between; align-items: center; }
+  .lh-title { font-size: 20px; font-weight: 800; }
+  .lh-badge {
+    background: rgba(255,255,255,0.15);
+    padding: 4px 12px; border-radius: 14px; font-size: 12px; font-weight: 600;
   }
 
-  /* 汇报统计条 */
-  .report-stats {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 8px; padding: 16px 16px 8px;
-  }
-  .r-stat {
-    background: white; border-radius: 12px; padding: 14px 10px;
-    text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  }
-  .r-stat .r-num { font-size: 26px; font-weight: 800; line-height: 1.1; }
-  .r-stat .r-label { font-size: 11px; color: #718096; margin-top: 4px; font-weight: 500; }
-  .r-stat .r-icon { font-size: 18px; margin-bottom: 4px; }
+  /* 设备列表容器 */
+  .device-list { padding: 8px 12px 32px; }
 
-  /* 地理分布条 */
-  .geo-bar {
-    background: white; border-radius: 14px; margin: 10px 16px;
-    padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  /* 设备行 - 极简卡片 */
+  .dev-row {
+    background: white; border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 8px;
+    display: flex; align-items: stretch; gap: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    cursor: pointer; transition: background 0.12s;
+    position: relative;
   }
-  .geo-bar h3 { font-size: 13px; color: #718096; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .geo-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .geo-chip {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: 600;
-  }
-  .geo-chip .geo-count { background: rgba(255,255,255,0.6); border-radius: 4px; padding: 1px 5px; font-size: 11px; }
+  .dev-row:active { background: #f7fafc; }
 
-  /* 设备卡片 - 汇报风格 */
-  .device-list { padding: 8px 16px 24px; }
-  .device-card {
-    background: white; border-radius: 14px;
-    padding: 0; margin-bottom: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    overflow: hidden; cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
+  /* 左侧时间线轴 */
+  .dev-tl {
+    display: flex; flex-direction: column; align-items: center;
+    width: 36px; flex-shrink: 0; padding-top: 2px;
   }
-  .device-card:active { transform: scale(0.985); }
-  .dc-top { display: flex; align-items: center; padding: 14px 16px 10px; gap: 12px; }
-  .dc-icon {
-    width: 48px; height: 48px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; flex-shrink: 0;
+  .dev-tl-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    border: 2px solid #cbd5e0; background: white;
+    flex-shrink: 0; position: relative; z-index: 1;
   }
-  .cat-t-teer .dc-icon { background: linear-gradient(135deg, #ebf8ff, #bee3f8); }
-  .cat-m-teer .dc-icon { background: linear-gradient(135deg, #fce7f3, #fbb6ce); }
-  .dc-info { flex: 1; min-width: 0; }
-  .dc-name { font-size: 16px; font-weight: 700; color: #1a202c; }
-  .dc-id { font-size: 12px; color: #a0aec0; margin-top: 1px; }
-  .dc-status-pill {
-    padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
-    white-space: nowrap; flex-shrink: 0;
+  .dev-tl-dot.ok { border-color: #48bb78; background: #f0fff4; }
+  .dev-tl-dot.warn { border-color: #ed8936; background: #fffaf0; }
+  .dev-tl-dot.error { border-color: #fc5c7d; background: #fff5f5; }
+  .dev-tl-dot.unchecked { border-color: #cbd5e0; background: #f7fafc; }
+  .dev-tl-line {
+    width: 2px; flex: 1; background: #e2e8f0; margin-top: 2px;
   }
-  .pill-ok { background: #f0fff4; color: #276749; }
-  .pill-warn { background: #fffaf0; color: #c05621; }
-  .pill-error { background: #fff5f5; color: #c53030; }
-  .pill-unchecked { background: #f7fafc; color: #718096; }
 
-  /* 卡片信息区 */
-  .dc-meta { padding: 0 16px 8px; display: flex; flex-wrap: wrap; gap: 6px; }
-  .dc-tag {
-    display: inline-flex; align-items: center; gap: 3px;
-    padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 500;
-    background: #f7fafc; color: #4a5568;
+  /* 中间主信息 */
+  .dev-main { flex: 1; min-width: 0; }
+  .dev-name {
+    font-size: 15px; font-weight: 700; color: #1a202c;
+    line-height: 1.3; display: flex; align-items: center; gap: 6px;
   }
-  .dc-tag.loc { background: #ebf8ff; color: #2b6cb0; }
-  .dc-tag.owner { background: #fefcbf; color: #975a16; }
-  .dc-tag.shipping { background: #faf5ff; color: #6b46c1; }
-  .dc-tag.repair { background: #fff5f5; color: #c53030; }
-
-  /* 卡片：器件状态快览 */
-  .dc-components {
-    display: flex; gap: 0; padding: 0 16px 10px;
-  }
-  .dc-comp {
-    flex: 1; text-align: center; padding: 6px 2px;
-    border-right: 1px solid #f0f4f8;
-  }
-  .dc-comp:last-child { border-right: none; }
-  .dc-comp .comp-icon { font-size: 16px; }
-  .dc-comp .comp-label { font-size: 9px; color: #a0aec0; margin-top: 1px; }
-  .dc-comp .comp-val { font-size: 11px; font-weight: 700; margin-top: 2px; }
-  .comp-val.have { color: #48bb78; }
-  .comp-val.missing { color: #fc5c7d; }
-  .comp-val.unknown { color: #cbd5e0; }
-
-  /* 卡片：物流路径条 */
-  .dc-shipping-track {
-    padding: 8px 16px 12px; display: none;
-  }
-  .dc-shipping-track.visible { display: block; }
-  .ship-route {
-    display: flex; align-items: center; gap: 0;
-    background: #f7fafc; border-radius: 10px; padding: 8px 12px;
-  }
-  .ship-node {
+  .dev-id-text { font-size: 12px; color: #a0aec0; font-weight: 400; }
+  .dev-location {
+    font-size: 13px; color: #4a5568; margin-top: 4px;
     display: flex; align-items: center; gap: 4px;
-    font-size: 11px; color: #4a5568; font-weight: 500;
-    white-space: nowrap;
   }
-  .ship-node .node-dot {
-    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  .dev-last-check {
+    font-size: 11px; color: #a0aec0; margin-top: 2px;
   }
-  .ship-node .node-dot.green { background: #48bb78; }
-  .ship-node .node-dot.blue { background: #4299e1; }
-  .ship-node .node-dot.gray { background: #cbd5e0; }
-  .ship-arrow { font-size: 12px; color: #cbd5e0; margin: 0 2px; flex-shrink: 0; }
 
-  /* 卡片：时间线预览 */
-  .dc-timeline-preview { padding: 8px 16px 12px; display: none; }
-  .dc-timeline-preview.visible { display: block; }
-  .tl-preview-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 4px 0; font-size: 12px; color: #718096;
+  /* 右侧次级信息 */
+  .dev-side {
+    display: flex; flex-direction: column; align-items: flex-end;
+    justify-content: center; gap: 4px; flex-shrink: 0;
   }
-  .tl-preview-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-  .cat-t-teer .tl-preview-dot { background: #2d6a9f; }
-  .cat-m-teer .tl-preview-dot { background: #9f2d6a; }
-  .tl-preview-time { font-size: 11px; color: #a0aec0; min-width: 80px; }
-  .tl-preview-loc { font-weight: 500; color: #4a5568; }
-  .tl-preview-more { font-size: 11px; color: #a0aec0; font-style: italic; }
+  .dev-side-tag {
+    font-size: 10px; font-weight: 600; padding: 2px 8px;
+    border-radius: 8px; white-space: nowrap;
+  }
+  .dev-side-tag.repair { background: #fff5f5; color: #c53030; }
+  .dev-side-tag.shipping { background: #faf5ff; color: #6b46c1; }
+  .dev-side-tag.warn-status { background: #fffaf0; color: #c05621; }
+  .dev-side-note {
+    font-size: 10px; color: #a0aec0; max-width: 80px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    text-align: right;
+  }
 
   /* ===== 详情页 - 汇报风格 ===== */
   .detail-header { color: white; padding: 16px 20px 20px; }
@@ -692,19 +635,14 @@
 </head>
 <body>
 
-<!-- ===== 页面1：设备列表 - 汇报风格 ===== -->
+<!-- ===== 页面1：设备总览 - 极简时间线 ===== -->
 <div id="page-list" class="page active">
-  <div class="report-header" id="list-header">
-    <div class="rh-top">
-      <div>
-        <div class="rh-title" id="list-title">TEER模拟器资产管理</div>
-        <div class="rh-date" id="list-date"></div>
-      </div>
-      <div class="rh-badge" id="list-badge">—</div>
+  <div class="list-header" id="list-header">
+    <div class="lh-row">
+      <div class="lh-title" id="list-title">TEER模拟器资产管理</div>
+      <div class="lh-badge" id="list-badge">—</div>
     </div>
   </div>
-  <div class="report-stats" id="report-stats"></div>
-  <div class="geo-bar" id="geo-bar"></div>
   <div class="device-list" id="device-list-container"></div>
 </div>
 
@@ -1256,141 +1194,72 @@ function getCompVal(v) {
 }
 
 // ============================================================
-// 渲染列表 - 汇报风格
+// 渲染列表 - 极简时间线风格
 // ============================================================
 function renderDeviceList() {
   const cat = CATEGORIES[currentCat];
   const header = document.getElementById("list-header");
-  header.className = `report-header ${cat.catClass}`;
+  header.className = `list-header ${cat.catClass}`;
 
-  const now = new Date();
-  const dateStr = now.toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric", weekday: "long" });
   document.getElementById("list-title").textContent = `${cat.icon} ${cat.label}`;
-  document.getElementById("list-date").textContent = dateStr;
+  document.getElementById("list-badge").textContent = `${devices.length} 台`;
 
-  // 统计
-  const ok = devices.filter(d => getStatusClass(d) === "status-ok").length;
-  const err = devices.filter(d => getStatusClass(d) === "status-error").length;
-  const warn = devices.filter(d => getStatusClass(d) === "status-warn").length;
-  const unc = devices.length - ok - err - warn;
-  const inTransit = devices.filter(d => d.shipping && d.shipping.trackingNo).length;
-  const repairCount = devices.filter(d => d.needRepair).length;
-
-  document.getElementById("list-badge").textContent = `共 ${devices.length} 台`;
-
-  document.getElementById("report-stats").innerHTML = `
-    <div class="r-stat"><div class="r-icon">✅</div><div class="r-num" style="color:#48bb78">${ok}</div><div class="r-label">正常</div></div>
-    <div class="r-stat"><div class="r-icon">❌</div><div class="r-num" style="color:#fc5c7d">${err}</div><div class="r-label">异常</div></div>
-    <div class="r-stat"><div class="r-icon">📦</div><div class="r-num" style="color:#6b46c1">${inTransit}</div><div class="r-label">运输中</div></div>
-    <div class="r-stat"><div class="r-icon">🔧</div><div class="r-num" style="color:#ed8936">${repairCount}</div><div class="r-label">待维修</div></div>
-  `;
-
-  // 地理分布
-  const geoMap = {};
+  // 按位置分组
+  const groups = {};
   devices.forEach(d => {
     const loc = d.location || "未知";
-    if (!geoMap[loc]) geoMap[loc] = [];
-    geoMap[loc].push(d);
+    if (!groups[loc]) groups[loc] = [];
+    groups[loc].push(d);
   });
-  const geoColors = ["#ebf8ff,#2b6cb0", "#fce7f3,#9f2d6a", "#fefcbf,#975a16", "#f0fff4,#276749", "#fff5f5,#c53030", "#faf5ff,#6b46c1", "#fffaf0,#c05621", "#ebf4ff,#3182ce"];
-  let geoIdx = 0;
-  const geoHtml = Object.entries(geoMap).map(([loc, devs]) => {
-    const colors = geoColors[geoIdx % geoColors.length].split(",");
-    const statusIcons = devs.map(d => {
-      const cls = getStatusClass(d);
-      if (cls === "status-ok") return "🟢";
-      if (cls === "status-error") return "🔴";
-      if (cls === "status-warn") return "🟡";
-      return "⚪";
-    }).join("");
-    geoIdx++;
-    return `<span class="geo-chip" style="background:${colors[0]};color:${colors[1]}">📍 ${loc} <span class="geo-count">${devs.length}台</span> ${statusIcons}</span>`;
-  }).join("");
-  document.getElementById("geo-bar").innerHTML = `<h3>📍 地理分布</h3><div class="geo-chips">${geoHtml}</div>`;
 
-  // 设备卡片
   const container = document.getElementById("device-list-container");
-  container.innerHTML = devices.map(d => {
-    const cls = getStatusClass(d);
-    const catCls = cat.catClass;
-    const pill = getStatusPill(d);
+  let html = '';
 
-    // 器件快览
-    const comps = `
-      <div class="dc-comp"><div class="comp-icon">🔧</div><div class="comp-label">扩张鞘</div>${getCompVal(d.dilator)}</div>
-      <div class="dc-comp"><div class="comp-icon">❤️</div><div class="comp-label">心脏模型</div>${getCompVal(d.heartmodel)}</div>
-      <div class="dc-comp"><div class="comp-icon">📏</div><div class="comp-label">导引鞘</div>${getCompVal(d.guidesheath)}</div>
-      <div class="dc-comp"><div class="comp-icon">📎</div><div class="comp-label">瓣膜夹</div>${getCompVal(d.clip)}</div>
-    `;
+  Object.entries(groups).forEach(([loc, devs]) => {
+    // 位置分组头
+    html += `<div style="padding:16px 4px 6px;font-size:13px;font-weight:700;color:#718096;display:flex;align-items:center;gap:6px">
+      📍 ${loc} <span style="font-size:11px;font-weight:400;color:#a0aec0">${devs.length}台</span>
+    </div>`;
 
-    // 物流路径条
-    let shipTrackHtml = '';
-    if (d.shipping && d.shipping.trackingNo) {
-      const s = d.shipping;
-      const tl = s.timeline || [];
-      const from = tl.length > 0 ? (tl[tl.length-1].location || "发货地") : "发货地";
-      const to = d.location || "目的地";
-      const isDelivered = s.status === "delivered";
-      const isTransit = s.status === "in_transit";
-      const carrierName = CARRIER_NAMES[s.carrier] || "";
-      shipTrackHtml = `
-        <div class="dc-shipping-track visible">
-          <div class="ship-route">
-            <div class="ship-node"><div class="node-dot green"></div>${from || "始发"}</div>
-            <div class="ship-arrow">→</div>
-            ${isTransit ? `<div class="ship-node"><div class="node-dot blue"></div>运输中</div><div class="ship-arrow">→</div>` : ''}
-            <div class="ship-node"><div class="node-dot ${isDelivered ? 'green' : 'gray'}"></div>${to}</div>
-            <span style="margin-left:auto;font-size:10px;color:#a0aec0">${carrierName} ${s.trackingNo.slice(-4)}</span>
+    devs.forEach((d, idx) => {
+      const cls = getStatusClass(d);
+      const dotCls = cls === "status-ok" ? "ok" : cls === "status-error" ? "error" : cls === "status-warn" ? "warn" : "unchecked";
+      const isLast = idx === devs.length - 1;
+
+      // 最后检查时间
+      const lastTime = d.lastCheck ? d.lastCheck.split(' ')[0] || d.lastCheck : '—';
+      // 检查人
+      const lastLog = d.logs && d.logs.length > 0 ? d.logs[d.logs.length - 1] : null;
+      const lastChecker = lastLog ? lastLog.checker : '';
+
+      // 次级信息标签
+      let sideHtml = '';
+      if (d.needRepair) sideHtml += `<span class="dev-side-tag repair">🔧 待维修</span>`;
+      else if (d.shipping && d.shipping.trackingNo) sideHtml += `<span class="dev-side-tag shipping">📦 运输中</span>`;
+      else if (cls === "status-warn") sideHtml += `<span class="dev-side-tag warn-status">⚠️ 注意</span>`;
+
+      // 备注（截断）
+      const noteText = d.statusNote || d.presetNote || '';
+      if (noteText) sideHtml += `<div class="dev-side-note">${noteText}</div>`;
+
+      html += `
+        <div class="dev-row" onclick="openDetail('${d.id}')"
+          ontouchstart="handleLongPress('${d.id}')" ontouchend="cancelLongPress()">
+          <div class="dev-tl">
+            <div class="dev-tl-dot ${dotCls}"></div>
+            ${!isLast ? '<div class="dev-tl-line"></div>' : ''}
           </div>
-        </div>`;
-    }
-
-    // 时间线预览（最近2条）
-    let tlPreviewHtml = '';
-    if (d.logs && d.logs.length > 0) {
-      const recent = d.logs.slice(-2).reverse();
-      const items = recent.map(log => `
-        <div class="tl-preview-item">
-          <div class="tl-preview-dot"></div>
-          <div class="tl-preview-time">${log.time ? log.time.split(' ')[0] || log.time : ''}</div>
-          <div class="tl-preview-loc">📍 ${log.location || '—'}</div>
-        </div>
-      `).join('');
-      const more = d.logs.length > 2 ? `<div class="tl-preview-more">… 共 ${d.logs.length} 条记录</div>` : '';
-      tlPreviewHtml = `
-        <div class="dc-timeline-preview visible">
-          ${items}
-          ${more}
-        </div>`;
-    }
-
-    // 标签
-    const tags = [];
-    tags.push(`<span class="dc-tag loc">📍 ${d.location || '未知'}</span>`);
-    tags.push(`<span class="dc-tag owner">👤 ${d.owner || '—'}</span>`);
-    if (d.region) tags.push(`<span class="dc-tag">🏢 ${d.region}</span>`);
-    if (d.shipping && d.shipping.trackingNo) tags.push(`<span class="dc-tag shipping">📦 运输中</span>`);
-    if (d.needRepair) tags.push(`<span class="dc-tag repair">🔧 待维修</span>`);
-    if (d.useStatus) tags.push(`<span class="dc-tag">${d.useStatus}</span>`);
-
-    return `
-      <div class="device-card ${catCls}"
-        onclick="openDetail('${d.id}')"
-        ontouchstart="handleLongPress('${d.id}')" ontouchend="cancelLongPress()">
-        <div class="dc-top">
-          <div class="dc-icon">${d.icon}</div>
-          <div class="dc-info">
-            <div class="dc-name">${d.name}</div>
-            <div class="dc-id">${d.id}</div>
+          <div class="dev-main">
+            <div class="dev-name">${d.name} <span class="dev-id-text">${d.id}</span></div>
+            <div class="dev-location">📍 ${d.location || '未知'}${d.owner ? ' · 👤 ' + d.owner : ''}</div>
+            <div class="dev-last-check">${lastTime !== '—' ? '🕐 ' + lastTime + (lastChecker ? ' · ' + lastChecker : '') : '⏳ 尚未检查'}</div>
           </div>
-          ${pill}
-        </div>
-        <div class="dc-meta">${tags.join('')}</div>
-        <div class="dc-components">${comps}</div>
-        ${shipTrackHtml}
-        ${tlPreviewHtml}
-      </div>`;
-  }).join('');
+          <div class="dev-side">${sideHtml}</div>
+        </div>`;
+    });
+  });
+
+  container.innerHTML = html;
 }
 
 // ============================================================
