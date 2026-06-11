@@ -691,7 +691,7 @@
   <div class="form-section">
     <div class="form-section-title">📋 基本信息</div>
     <div class="form-item"><label>检查人</label><input type="text" id="f-checker" placeholder="请输入姓名" oninput="updateSubmitBtnState()"></div>
-    <div class="form-item"><label>当前位置</label><input type="text" id="f-location" placeholder="如：手术室A / 展区B" oninput="updateSubmitBtnState()"></div>
+    <div class="form-item"><label>当前位置</label><input type="text" id="f-location" placeholder="⚠️ 请填写本次检查的实际位置（勿直接使用默认值）" style="font-size:13px" oninput="updateSubmitBtnState()"></div>
     <div class="form-item"><label>关联单号 <span style="color:#a0aec0;font-size:12px;font-weight:400">（选填）</span></label><input type="text" id="f-refno" placeholder="如：PO-2024-001 / 项目编号"></div>
   </div>
   <div class="form-section">
@@ -1620,7 +1620,7 @@ function goToCheckForm() {
     noteCard.style.display = "none";
   }
   document.getElementById("f-checker").value = "";
-  document.getElementById("f-location").value = currentDevice.location || "";
+  document.getElementById("f-location").value = "";
   document.getElementById("f-refno").value = "";
   document.getElementById("f-note").value = "";
   document.getElementById("upload-preview").innerHTML = "";
