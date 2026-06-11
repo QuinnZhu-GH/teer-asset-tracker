@@ -1532,6 +1532,7 @@ function toggleCollapse(headerEl) {
 // 详情页 - 主次分明
 // ============================================================
 function openDetail(deviceId) {
+  try {
   currentDevice = devices.find(d => d.id === deviceId);
   if (!currentDevice) return;
   const cat = CATEGORIES[currentCat];
@@ -1645,6 +1646,10 @@ function openDetail(deviceId) {
   // 按钮样式
   document.getElementById("btn-check").className = `submit-btn ${cat.catClass}`;
   showPage("page-detail");
+  } catch(e) {
+    console.error('openDetail error:', e);
+    alert('打开详情出错: ' + (e.message || e));
+  }
 }
 
 // ============================================================
