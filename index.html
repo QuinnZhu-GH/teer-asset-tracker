@@ -58,6 +58,7 @@
   .device-info { flex: 1; min-width: 0; }
   .device-name { font-size: 15px; font-weight: 600; color: #1a202c; }
   .device-id { font-size: 12px; color: #718096; margin-top: 2px; }
+  .device-meta { font-size: 11px; color: #4a5568; margin-top: 3px; background: #f7fafc; padding: 2px 6px; border-radius: 4px; display: inline-block; }
   .device-status { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #a0aec0; flex-shrink: 0; }
   .status-dot.ok { background: #48bb78; }
@@ -338,8 +339,9 @@
       <div class="info-row"><span class="info-label">分类</span><span class="info-value" id="d-category"></span></div>
       <div class="info-row"><span class="info-label">型号规格</span><span class="info-value" id="d-model"></span></div>
       <div class="info-row"><span class="info-label">序列号</span><span class="info-value" id="d-sn"></span></div>
-      <div class="info-row"><span class="info-label">存放位置</span><span class="info-value" id="d-location"></span></div>
-      <div class="info-row"><span class="info-label">负责人</span><span class="info-value" id="d-owner"></span></div>
+      <div class="info-row"><span class="info-label">所属区域</span><span class="info-value" id="d-region"></span></div>
+      <div class="info-row"><span class="info-label">常规保管位置</span><span class="info-value" id="d-location"></span></div>
+      <div class="info-row"><span class="info-label">常规保管人</span><span class="info-value" id="d-owner"></span></div>
     </div>
     <div class="info-card">
       <h3>🔍 最新检查状态</h3>
@@ -469,6 +471,27 @@ const CATEGORIES = {
   }
 };
 
+// 设备固定属性预设（常规保管人、所属区域、常规保管位置）
+// 短时间内固定，后续修改时更新此对象即可
+const DEVICE_PRESETS = {
+  "T-TEER-001": { owner: "（待填写）", region: "（待填写）", location: "（待填写）" },
+  "T-TEER-002": { owner: "（待填写）", region: "（待填写）", location: "（待填写）" },
+  "M-TEER-001": { owner: "张杰伟", region: "华东2", location: "济安" },
+  "M-TEER-002": { owner: "朱俊东", region: "西北", location: "西安" },
+  "M-TEER-003": { owner: "李仁", region: "华东2", location: "衢州" },
+  "M-TEER-004": { owner: "杭州办", region: "杭州办", location: "杭州仓" },
+  "M-TEER-005": { owner: "李承艳", region: "华蓉", location: "广州" },
+  "M-TEER-006": { owner: "杭州办", region: "杭州办", location: "杭州仓库" },
+  "M-TEER-007": { owner: "王蒙", region: "西南", location: "重庆" },
+  "M-TEER-008": { owner: "何子惠", region: "华东1", location: "杭州在库" },
+  "M-TEER-009": { owner: "关乃磊", region: "杭州1", location: "上海" },
+  "M-TEER-010": { owner: "郑冉", region: "西北", location: "乌鲁木齐" },
+  "M-TEER-011": { owner: "刘雷", region: "华中", location: "合肥" },
+  "M-TEER-012": { owner: "曹培波", region: "华东1", location: "福建" },
+  "M-TEER-013": { owner: "顾洋泽", region: "华北", location: "北京" },
+  "M-TEER-014": { owner: "杭州办", region: "杭州办", location: "杭州仓库" }
+};
+
 // 当前分类（从URL读取）
 let currentCat = null;
 let devices = [];
@@ -486,14 +509,17 @@ function createDefaultDevices(catKey) {
   const arr = [];
   for (let i = 1; i <= cat.count; i++) {
     const num = String(i).padStart(3, "0");
+    const id = `${cat.idPrefix}-${num}`;
+    const preset = DEVICE_PRESETS[id] || {};
     arr.push({
-      id: `${cat.idPrefix}-${num}`,
+      id: id,
       name: `${cat.defaultName} #${i}`,
       model: "（待填写）",
       sn: "（待填写）",
       icon: cat.icon,
-      location: "（待填写）",
-      owner: "（待填写）",
+      location: preset.location || "（待填写）",
+      region: preset.region || "（待填写）",
+      owner: preset.owner || "（待填写）",
       category: catKey,
       partsStatus: "unchecked",
       funcStatus: "unchecked",
@@ -527,6 +553,17 @@ function ensureDevices(catKey) {
   if (!allData) allData = {};
   if (!allData[catKey]) {
     allData[catKey] = createDefaultDevices(catKey);
+    saveAllData(allData);
+  } else {
+    // 合并固定属性更新（如常规保管人、区域、位置发生变化）
+    allData[catKey].forEach(d => {
+      const preset = DEVICE_PRESETS[d.id];
+      if (preset) {
+        d.owner = preset.owner;
+        d.region = preset.region;
+        d.location = preset.location;
+      }
+    });
     saveAllData(allData);
   }
   return allData[catKey];
@@ -621,7 +658,8 @@ function renderDeviceList() {
         <div class="device-icon">${d.icon}</div>
         <div class="device-info">
           <div class="device-name">${d.name}</div>
-          <div class="device-id">${d.id} · ${d.model}</div>
+          <div class="device-id">${d.id}</div>
+          <div class="device-meta">👤 ${d.owner || '—'} · 📍 ${d.location || '—'}</div>
           <div class="device-status">
             <div class="status-dot ${dotCls}"></div>
             <span class="status-text">${statusText}</span>
@@ -648,6 +686,7 @@ function openDetail(deviceId) {
   document.getElementById("d-category").textContent = cat.shortLabel;
   document.getElementById("d-model").textContent = currentDevice.model;
   document.getElementById("d-sn").textContent = currentDevice.sn;
+  document.getElementById("d-region").textContent = currentDevice.region;
   document.getElementById("d-location").textContent = currentDevice.location;
   document.getElementById("d-owner").textContent = currentDevice.owner;
   document.getElementById("d-parts").innerHTML = statusBadge(currentDevice.partsStatus);
