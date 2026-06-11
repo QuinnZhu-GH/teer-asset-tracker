@@ -566,6 +566,128 @@
     vertical-align: middle; margin-right: 8px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== 详情页重构：主次分明 ===== */
+
+  /* 顶部主信息条 */
+  .primary-strip {
+    background: white;
+    border-radius: 16px;
+    margin: 12px;
+    padding: 16px 18px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  }
+  .ps-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .ps-status-group { display: flex; flex-direction: column; gap: 6px; }
+  .ps-status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 14px; font-weight: 700;
+  }
+  .ps-status-pill.ok { background: #f0fff4; color: #276749; }
+  .ps-status-pill.warn { background: #fffaf0; color: #c05621; }
+  .ps-status-pill.error { background: #fff5f5; color: #c53030; }
+  .ps-status-pill.info { background: #ebf8ff; color: #2b6cb0; }
+  .ps-repair-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 12px;
+    font-size: 12px; font-weight: 600;
+    background: #fff5f5; color: #c53030;
+  }
+  .ps-loc-group { text-align: right; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+  .ps-loc-name {
+    font-size: 18px; font-weight: 700; color: #1a202c;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .ps-loc-sub { font-size: 12px; color: #718096; }
+  .ps-note {
+    margin-top: 10px; padding: 8px 12px;
+    background: #fefce8; border-radius: 8px;
+    font-size: 12px; color: #744210; line-height: 1.5;
+    border-left: 3px solid #d69e2e;
+  }
+
+  /* 时间线英雄区 */
+  .timeline-hero {
+    margin: 12px;
+    background: white;
+    border-radius: 16px;
+    padding: 18px 16px 6px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  }
+  .timeline-hero h3 {
+    font-size: 15px; font-weight: 700; color: #1a202c;
+    margin-bottom: 14px; display: flex; align-items: center; gap: 6px;
+  }
+  .timeline-hero .te-item {
+    padding: 14px 0;
+  }
+  .timeline-hero .te-dot {
+    width: 38px; height: 38px;
+    font-size: 16px;
+  }
+  .timeline-hero .te-loc {
+    font-size: 16px; font-weight: 700; color: #1a202c;
+  }
+  .timeline-hero .te-components {
+    margin-top: 8px;
+  }
+  .timeline-hero .te-comp-tag {
+    padding: 3px 9px; font-size: 11px;
+  }
+  .timeline-hero .te-refno {
+    margin-top: 6px;
+  }
+
+  /* 折叠区 - 次要信息 */
+  .collapse-section {
+    margin: 0 12px 12px;
+  }
+  .collapse-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 13px 16px;
+    background: #f7fafc;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 13px; font-weight: 600; color: #718096;
+    transition: background 0.15s;
+    border: 1px solid #edf2f7;
+  }
+  .collapse-header:active { background: #edf2f7; }
+  .collapse-header .ch-arrow {
+    transition: transform 0.2s; font-size: 11px; color: #a0aec0;
+  }
+  .collapse-header.open .ch-arrow { transform: rotate(180deg); }
+  .collapse-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.35s ease;
+  }
+  .collapse-body.open { max-height: 3000px; }
+  .collapse-inner {
+    background: white;
+    border-radius: 0 0 12px 12px;
+    padding: 4px 16px 16px;
+    border: 1px solid #edf2f7;
+    border-top: none;
+  }
+
+  /* 次要卡片 - 弱化样式 */
+  .secondary-card {
+    background: #f7fafc;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1px solid #edf2f7;
+  }
+  .secondary-card h4 {
+    font-size: 13px; font-weight: 600; color: #4a5568;
+    margin-bottom: 8px;
+  }
 </style>
 </head>
 <body>
@@ -586,92 +708,124 @@
   <div class="device-list" id="device-list-container"></div>
 </div>
 
-<!-- ===== 页面2：设备详情 - 汇报风格 ===== -->
+<!-- ===== 页面2：设备详情 - 主次分明 ===== -->
 <div id="page-detail" class="page">
   <div class="detail-header" id="detail-header">
     <button class="back-btn" onclick="goBack('page-list')">← 返回列表</button>
     <div class="detail-device-name" id="detail-name"></div>
     <div class="detail-device-id" id="detail-id"></div>
   </div>
-  <div class="detail-body">
-    <!-- 使用状态条 -->
-    <div class="quick-card" id="qc-status">
-      <h3>📊 使用状态</h3>
-      <div id="d-use-bar-container"></div>
-    </div>
+  <div class="detail-body" style="padding-bottom:24px">
 
-    <!-- 地点标注卡 -->
-    <div class="quick-card">
-      <h3>📍 当前位置</h3>
-      <div id="d-location-card"></div>
-    </div>
-
-    <!-- 管理备注卡 - 同步扫码可见 -->
-    <div class="quick-card" id="d-admin-note-card" style="display:none">
-      <h3>📌 管理备注</h3>
-      <div id="d-admin-note-content"></div>
-    </div>
-
-    <!-- 器件状态仪表盘 -->
-    <div class="quick-card">
-      <h3>🔩 器件功能状态</h3>
-      <div class="status-dashboard" id="d-status-dashboard"></div>
-    </div>
-
-    <!-- 关联单号追踪 -->
-    <div class="quick-card" id="refno-card" style="display:none">
-      <h3>🔗 关联单号追踪</h3>
-      <div id="d-refno-card-content" style="font-size:15px;color:#6b46c1;font-weight:700;margin-bottom:8px"></div>
-      <button class="submit-btn" style="background:linear-gradient(135deg,#805ad5,#9f7aea);box-shadow:0 4px 14px rgba(128,90,213,0.3);padding:10px;font-size:14px;width:100%;margin:0" onclick="trackRefNo()">🔍 查询单号状态</button>
-    </div>
-
-    <!-- 快递追踪路线图 -->
-    <div class="quick-card" id="shipping-card">
-      <h3>📦 快递追踪</h3>
-      <div id="shipping-bind-row" class="shipping-input-row">
-        <select id="f-ship-carrier">
-          <option value="">选择快递</option>
-          <option value="shunfeng">顺丰速运</option>
-          <option value="zhongtong">中通快递</option>
-          <option value="yunda">韵达快递</option>
-          <option value="yuantong">圆通速递</option>
-          <option value="shentong">申通快递</option>
-          <option value="jingdong">京东物流</option>
-          <option value="ems">EMS</option>
-          <option value="debang">德邦快递</option>
-          <option value="tiantian">天天快递</option>
-          <option value="huitongkuaidi">百世快递</option>
-        </select>
-        <input type="text" id="f-ship-no" placeholder="输入快递单号">
-        <button class="shipping-btn bind" onclick="bindShipping()">绑定</button>
-      </div>
-      <div id="shipping-info-row" style="display:none">
-        <div class="shipping-info">
-          <span class="shipping-carrier" id="d-ship-carrier"></span>
-          <span class="shipping-no" id="d-ship-no"></span>
-          <button class="shipping-btn refresh" onclick="refreshTracking()">🔄 更新物流</button>
-          <button class="shipping-btn unbind" onclick="unbindShipping()">✕ 解绑</button>
+    <!-- 【主信息】状态 + 位置 顶条 -->
+    <div class="primary-strip" id="primary-strip">
+      <div class="ps-top">
+        <div class="ps-status-group">
+          <div id="ps-status-pill"></div>
+          <div id="ps-repair-tag"></div>
+        </div>
+        <div class="ps-loc-group">
+          <div class="ps-loc-name" id="ps-loc-name"></div>
+          <div class="ps-loc-sub" id="ps-loc-sub"></div>
         </div>
       </div>
-      <div id="d-ship-timeline"></div>
+      <div id="ps-note" style="display:none"></div>
     </div>
 
-    <!-- 时间线历史 -->
-    <div class="quick-card">
+    <!-- 【主信息】时间线英雄区 -->
+    <div class="timeline-hero">
       <h3>📅 检查时间线</h3>
       <div class="timeline-enhanced" id="d-timeline"></div>
     </div>
 
-    <!-- 媒体记录 -->
-    <div class="quick-card">
-      <h3>📸 现场媒体记录</h3>
-      <div class="media-grid" id="d-media"></div>
+    <!-- 【次要】器件状态 - 折叠 -->
+    <div class="collapse-section">
+      <div class="collapse-header" onclick="toggleCollapse(this)">
+        🔩 器件功能详情 <span class="ch-arrow">▼</span>
+      </div>
+      <div class="collapse-body">
+        <div class="collapse-inner">
+          <div class="status-dashboard" id="d-status-dashboard"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 【次要】管理备注 - 折叠 -->
+    <div class="collapse-section" id="admin-note-section" style="display:none">
+      <div class="collapse-header" onclick="toggleCollapse(this)">
+        📌 管理备注 <span class="ch-arrow">▼</span>
+      </div>
+      <div class="collapse-body">
+        <div class="collapse-inner" id="d-admin-note-content"></div>
+      </div>
+    </div>
+
+    <!-- 【次要】关联单号 - 折叠 -->
+    <div class="collapse-section" id="refno-section" style="display:none">
+      <div class="collapse-header" onclick="toggleCollapse(this)">
+        🔗 关联单号 <span class="ch-arrow">▼</span>
+      </div>
+      <div class="collapse-body">
+        <div class="collapse-inner">
+          <div id="d-refno-card-content" style="font-size:15px;color:#6b46c1;font-weight:700;margin-bottom:8px"></div>
+          <button class="submit-btn" style="background:linear-gradient(135deg,#805ad5,#9f7aea);box-shadow:0 4px 14px rgba(128,90,213,0.3);padding:10px;font-size:14px;width:100%;margin:0" onclick="trackRefNo()">🔍 查询单号状态</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 【次要】快递追踪 - 折叠 -->
+    <div class="collapse-section" id="shipping-section">
+      <div class="collapse-header" onclick="toggleCollapse(this)">
+        📦 快递追踪 <span class="ch-arrow">▼</span>
+      </div>
+      <div class="collapse-body">
+        <div class="collapse-inner">
+          <div id="shipping-bind-row" class="shipping-input-row">
+            <select id="f-ship-carrier">
+              <option value="">选择快递</option>
+              <option value="shunfeng">顺丰速运</option>
+              <option value="zhongtong">中通快递</option>
+              <option value="yunda">韵达快递</option>
+              <option value="yuantong">圆通速递</option>
+              <option value="shentong">申通快递</option>
+              <option value="jingdong">京东物流</option>
+              <option value="ems">EMS</option>
+              <option value="debang">德邦快递</option>
+              <option value="tiantian">天天快递</option>
+              <option value="huitongkuaidi">百世快递</option>
+            </select>
+            <input type="text" id="f-ship-no" placeholder="输入快递单号">
+            <button class="shipping-btn bind" onclick="bindShipping()">绑定</button>
+          </div>
+          <div id="shipping-info-row" style="display:none">
+            <div class="shipping-info">
+              <span class="shipping-carrier" id="d-ship-carrier"></span>
+              <span class="shipping-no" id="d-ship-no"></span>
+              <button class="shipping-btn refresh" onclick="refreshTracking()">🔄 更新物流</button>
+              <button class="shipping-btn unbind" onclick="unbindShipping()">✕ 解绑</button>
+            </div>
+          </div>
+          <div id="d-ship-timeline"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 【次要】媒体记录 - 折叠 -->
+    <div class="collapse-section">
+      <div class="collapse-header" onclick="toggleCollapse(this)">
+        📸 现场媒体记录 <span class="ch-arrow">▼</span>
+      </div>
+      <div class="collapse-body">
+        <div class="collapse-inner">
+          <div class="media-grid" id="d-media"></div>
+        </div>
+      </div>
     </div>
 
     <!-- 操作按钮 -->
-    <button class="submit-btn" id="btn-check" onclick="goToCheckForm()">📝 发起新检查</button>
-    <button class="submit-btn" id="btn-records" style="margin:8px 0 0 0;background:linear-gradient(135deg,#5a67d8,#667eea);box-shadow:0 4px 14px rgba(90,103,216,0.35)" onclick="openRecordsPage()">📋 检查记录管理</button>
-    <button class="submit-btn" id="btn-qr" style="margin:8px 0 12px 0;background:linear-gradient(135deg,#276749,#38a169);box-shadow:0 4px 14px rgba(39,103,73,0.35)" onclick="showQRModal(currentDevice)">🔲 查看/打印二维码</button>
+    <button class="submit-btn" id="btn-check" onclick="goToCheckForm()" style="margin:16px 12px 8px">📝 发起新检查</button>
+    <button class="submit-btn" id="btn-records" style="margin:0 12px 8px;background:linear-gradient(135deg,#5a67d8,#667eea);box-shadow:0 4px 14px rgba(90,103,216,0.35)" onclick="openRecordsPage()">📋 检查记录管理</button>
+    <button class="submit-btn" id="btn-qr" style="margin:0 12px 12px;background:linear-gradient(135deg,#276749,#38a169);box-shadow:0 4px 14px rgba(39,103,73,0.35)" onclick="showQRModal(currentDevice)">🔲 查看/打印二维码</button>
   </div>
 </div>
 
@@ -1035,27 +1189,27 @@ function saveCurrentDevices() {
 }
 
 function editStatusNote() {
-  const el = document.getElementById("d-statusnote-inline");
-  if (!el) return;
+  const noteEl = document.getElementById("ps-note");
+  if (!noteEl) return;
   const current = currentDevice.statusNote || "";
   const input = document.createElement("input");
   input.type = "text";
   input.value = current;
   input.placeholder = "输入状态备注…";
-  input.style.cssText = "width:100%;border:1px solid #cbd5e0;border-radius:6px;padding:4px 8px;font-size:13px;outline:none;";
-  el.replaceWith(input);
+  input.style.cssText = "width:100%;border:1px solid #cbd5e0;border-radius:6px;padding:6px 10px;font-size:13px;outline:none;background:#fffdf5;";
+  noteEl.innerHTML = "";
+  noteEl.appendChild(input);
   input.focus();
   input.select();
   function save() {
     const val = input.value.trim();
     currentDevice.statusNote = val;
     saveCurrentDevices();
-    const span = document.createElement("span");
-    span.id = "d-statusnote-inline";
-    span.textContent = val || "点击添加";
-    span.style.cssText = val ? "color:#2b6cb0;cursor:pointer" : "color:#a0aec0;font-style:italic;cursor:pointer";
-    span.onclick = editStatusNote;
-    input.replaceWith(span);
+    if (val) {
+      noteEl.innerHTML = `<span id="ps-note-text">${val}</span><span style="font-size:11px;color:#b7791f;margin-left:6px;cursor:pointer" onclick="editStatusNote()">✏️</span>`;
+    } else {
+      noteEl.innerHTML = `<span style="color:#b7791f;font-style:italic;cursor:pointer" onclick="editStatusNote()">+ 点击添加备注</span>`;
+    }
   }
   input.addEventListener("blur", save);
   input.addEventListener("keydown", e => { if (e.key === "Enter") input.blur(); if (e.key === "Escape") { input.value = current; input.blur(); } });
@@ -1240,7 +1394,22 @@ function renderDeviceList() {
 }
 
 // ============================================================
-// 详情页 - 汇报风格
+// 折叠切换
+// ============================================================
+function toggleCollapse(headerEl) {
+  const body = headerEl.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+  if (isOpen) {
+    body.classList.remove('open');
+    headerEl.classList.remove('open');
+  } else {
+    body.classList.add('open');
+    headerEl.classList.add('open');
+  }
+}
+
+// ============================================================
+// 详情页 - 主次分明
 // ============================================================
 function openDetail(deviceId) {
   currentDevice = devices.find(d => d.id === deviceId);
@@ -1251,51 +1420,50 @@ function openDetail(deviceId) {
   document.getElementById("detail-name").textContent = currentDevice.name;
   document.getElementById("detail-id").textContent = currentDevice.id + " · " + currentDevice.region;
 
-  // 使用状态条
+  // ===== 主信息条：状态 + 位置 =====
   const useStatusMap = {
-    "保管地": { dot: "green", text: "🟢 保管地", sub: "设备在保管位置" },
-    "调用中": { dot: "orange", text: "🟠 调用中", sub: "设备已出库使用" },
-    "待维修": { dot: "red", text: "🔴 待维修", sub: "需要维修处理" },
-    "招标": { dot: "blue", text: "🔵 招标中", sub: "招标流程中" },
-    "": { dot: "gray", text: "⚪ 未设置", sub: "" }
+    "保管地": { cls: "ok", text: "🟢 保管地", sub: "设备在保管位置" },
+    "调用中": { cls: "warn", text: "🟠 调用中", sub: "设备已出库使用" },
+    "待维修": { cls: "error", text: "🔴 待维修", sub: "需要维修处理" },
+    "招标": { cls: "info", text: "🔵 招标中", sub: "招标流程中" },
+    "": { cls: "info", text: "⚪ 未设置", sub: "" }
   };
-  const us = useStatusMap[currentDevice.useStatus] || { dot: "gray", text: "⚪ " + (currentDevice.useStatus || "未设置"), sub: "" };
-  const statusNoteHtml = currentDevice.statusNote
-    ? `<span style="font-size:12px;color:#718096;margin-left:8px;cursor:pointer" id="d-statusnote-inline" onclick="editStatusNote()">${currentDevice.statusNote}</span>`
-    : `<span style="font-size:12px;color:#a0aec0;margin-left:8px;cursor:pointer;font-style:italic" id="d-statusnote-inline" onclick="editStatusNote()">点击添加备注</span>`;
-  const repairHtml = currentDevice.needRepair ? `<div class="use-bar"><div class="use-dot red"></div><div class="use-text" style="color:#c53030">⚠️ 需要维修</div><div class="use-sub">${currentDevice.presetNote || ''}</div></div>` : '';
+  const us = useStatusMap[currentDevice.useStatus] || { cls: "info", text: "⚪ " + (currentDevice.useStatus || "未设置"), sub: "" };
+  document.getElementById("ps-status-pill").innerHTML = `<div class="ps-status-pill ${us.cls}">${us.text}</div>`;
 
-  document.getElementById("d-use-bar-container").innerHTML = `
-    <div class="use-bar">
-      <div class="use-dot ${us.dot}"></div>
-      <div class="use-text">${us.text}</div>
-      <div class="use-sub">${us.sub}${statusNoteHtml}</div>
-    </div>
-    ${repairHtml}
-  `;
+  // 维修标记
+  const repairTag = document.getElementById("ps-repair-tag");
+  if (currentDevice.needRepair) {
+    repairTag.innerHTML = `<div class="ps-repair-tag">🔧 待维修</div>`;
+    repairTag.style.display = "block";
+  } else {
+    repairTag.style.display = "none";
+  }
 
-  // 地点标注卡
-  const latestLog = currentDevice.logs && currentDevice.logs.length > 0 ? currentDevice.logs[currentDevice.logs.length - 1] : null;
-  const lastCheckTime = currentDevice.lastCheck || "从未检查";
-  const refNoDisplay = latestLog && latestLog.refNo ? `<div style="margin-top:4px;font-size:12px">🔗 单号：${latestLog.refNo}</div>` : '';
-  document.getElementById("d-location-card").innerHTML = `
-    <div class="location-card">
-      <div class="loc-pin">📍</div>
-      <div class="loc-info">
-        <div class="loc-name">${currentDevice.location || '未知'}</div>
-        <div class="loc-detail">${currentDevice.region} · ${currentDevice.owner}${refNoDisplay}</div>
-      </div>
-    </div>
-  `;
+  // 位置
+  document.getElementById("ps-loc-name").innerHTML = `📍 ${currentDevice.location || '未知'}`;
+  const subParts = [currentDevice.region, currentDevice.owner].filter(Boolean);
+  document.getElementById("ps-loc-sub").textContent = subParts.join(' · ') || '—';
 
-  // 管理备注卡 - 同步扫码可见
-  const dAdminCard = document.getElementById("d-admin-note-card");
+  // 备注（可点击编辑）
+  const noteEl = document.getElementById("ps-note");
+  const noteText = currentDevice.statusNote || (currentDevice.needRepair ? currentDevice.presetNote : "");
+  if (noteText && noteText.trim()) {
+    noteEl.style.display = "block";
+    noteEl.innerHTML = `<span id="ps-note-text">${noteText}</span><span style="font-size:11px;color:#b7791f;margin-left:6px;cursor:pointer" onclick="editStatusNote()">✏️</span>`;
+  } else {
+    noteEl.style.display = "block";
+    noteEl.innerHTML = `<span style="color:#b7791f;font-style:italic;cursor:pointer" onclick="editStatusNote()">+ 点击添加备注</span>`;
+  }
+
+  // ===== 管理备注折叠区 =====
+  const adminSection = document.getElementById("admin-note-section");
   const hasDNote = (currentDevice.presetNote && currentDevice.presetNote.trim()) ||
                    (currentDevice.statusNote && currentDevice.statusNote.trim()) ||
                    currentDevice.needRepair ||
                    (currentDevice.shipping && currentDevice.shipping.trackingNo);
   if (hasDNote) {
-    dAdminCard.style.display = "block";
+    adminSection.style.display = "block";
     let dNoteHtml = "";
     if (currentDevice.presetNote && currentDevice.presetNote.trim()) {
       dNoteHtml += `<div style="font-size:13px;color:#744210;line-height:1.6;padding:4px 0"><span style="font-weight:600;color:#975a16">📝 设备备注：</span>${currentDevice.presetNote}</div>`;
@@ -1313,19 +1481,21 @@ function openDetail(deviceId) {
     }
     document.getElementById("d-admin-note-content").innerHTML = dNoteHtml;
   } else {
-    dAdminCard.style.display = "none";
+    adminSection.style.display = "none";
   }
 
-  // 器件状态仪表盘
+  // ===== 器件状态仪表盘（折叠区内） =====
   const yn = v => v === "有" ? "ok" : v === "无" ? "err" : "mute";
   const ynText = v => v === "有" ? "✅ 正常" : v === "无" ? "❌ 缺失" : "— 待检";
   let clipfuncText = "";
   if (currentDevice.clip === "有" && currentDevice.clipfunc && currentDevice.clipfunc.length > 0) {
     const labels = currentDevice.clipfunc.map(v => v === "其他" && currentDevice.clipfuncOther ? "其他：" + currentDevice.clipfuncOther : v);
     const hasIssue = !currentDevice.clipfunc.includes("可用");
-    clipfuncText = hasIssue ? `<div class="sd-item" style="grid-column:1/-1"><div class="sd-icon">⚡</div><div class="sd-info"><div class="sd-label">瓣膜夹功能</div><div class="sd-val err">${labels.join("、")}</div></div></div>` : `<div class="sd-item" style="grid-column:1/-1"><div class="sd-icon">⚡</div><div class="sd-info"><div class="sd-label">瓣膜夹功能</div><div class="sd-val ok">✅ ${labels.join("、")}</div></div></div>`;
+    clipfuncText = hasIssue
+      ? `<div class="sd-item" style="grid-column:1/-1"><div class="sd-icon">⚡</div><div class="sd-info"><div class="sd-label">瓣膜夹功能</div><div class="sd-val err">${labels.join("、")}</div></div></div>`
+      : `<div class="sd-item" style="grid-column:1/-1"><div class="sd-icon">⚡</div><div class="sd-info"><div class="sd-label">瓣膜夹功能</div><div class="sd-val ok">✅ ${labels.join("、")}</div></div></div>`;
   }
-
+  const lastCheckTime = currentDevice.lastCheck || "从未检查";
   document.getElementById("d-status-dashboard").innerHTML = `
     <div class="sd-item"><div class="sd-icon">🔧</div><div class="sd-info"><div class="sd-label">扩张鞘</div><div class="sd-val ${yn(currentDevice.dilator)}">${ynText(currentDevice.dilator)}</div></div></div>
     <div class="sd-item"><div class="sd-icon">❤️</div><div class="sd-info"><div class="sd-label">心脏模型</div><div class="sd-val ${yn(currentDevice.heartmodel)}">${ynText(currentDevice.heartmodel)}</div></div></div>
@@ -1335,21 +1505,24 @@ function openDetail(deviceId) {
     <div class="sd-item" style="grid-column:1/-1"><div class="sd-icon">🕐</div><div class="sd-info"><div class="sd-label">最近检查</div><div class="sd-val ${currentDevice.lastCheck ? 'ok' : 'mute'}">${lastCheckTime}</div></div></div>
   `;
 
-  // 关联单号
+  // ===== 关联单号（折叠区） =====
+  const latestLog = currentDevice.logs && currentDevice.logs.length > 0 ? currentDevice.logs[currentDevice.logs.length - 1] : null;
+  const refSection = document.getElementById("refno-section");
   if (latestLog && latestLog.refNo) {
-    document.getElementById("refno-card").style.display = "block";
+    refSection.style.display = "block";
     document.getElementById("d-refno-card-content").textContent = latestLog.refNo;
     currentRefNo = latestLog.refNo;
   } else {
-    document.getElementById("refno-card").style.display = "none";
+    refSection.style.display = "none";
     currentRefNo = "";
   }
 
+  // ===== 时间线 + 媒体 + 快递 =====
   renderTimeline(currentDevice, cat);
   renderMedia(currentDevice);
   renderShipping(currentDevice);
 
-  // 按钮
+  // 按钮样式
   document.getElementById("btn-check").className = `submit-btn ${cat.catClass}`;
   showPage("page-detail");
 }
