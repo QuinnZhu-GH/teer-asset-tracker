@@ -346,6 +346,44 @@
   .media-thumb .media-date .media-time { font-weight: 600; display: block; }
   .media-thumb .media-date .media-checker { font-size: 10px; opacity: 0.85; display: block; }
 
+  /* 管理备注卡 - 扫码可见 */
+  .admin-note-card {
+    margin: 12px; padding: 14px 16px;
+    background: linear-gradient(135deg, #fefcbf, #fefce8);
+    border-radius: 12px; border-left: 4px solid #d69e2e;
+    box-shadow: 0 2px 8px rgba(214,158,46,0.1);
+  }
+  .admin-note-card .anc-header {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 700; color: #975a16; margin-bottom: 8px;
+  }
+  .admin-note-card .anc-header .anc-badge {
+    background: #ed8936; color: white; padding: 2px 8px;
+    border-radius: 10px; font-size: 10px; font-weight: 600;
+  }
+  .admin-note-card .anc-item {
+    font-size: 13px; color: #744210; line-height: 1.6;
+    padding: 4px 0; border-bottom: 1px solid rgba(214,158,46,0.15);
+  }
+  .admin-note-card .anc-item:last-child { border-bottom: none; }
+  .admin-note-card .anc-item .anc-label {
+    font-weight: 600; color: #975a16; margin-right: 4px;
+  }
+  .admin-note-card .anc-status {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-top: 6px; padding: 3px 10px; border-radius: 12px;
+    font-size: 12px; font-weight: 600;
+  }
+  .admin-note-card .anc-status.ok { background: #f0fff4; color: #276749; }
+  .admin-note-card .anc-status.warn { background: #fffaf0; color: #c05621; }
+  .admin-note-card .anc-status.error { background: #fff5f5; color: #c53030; }
+  .admin-note-card .anc-status.info { background: #ebf8ff; color: #2b6cb0; }
+  .admin-note-card .anc-repair {
+    margin-top: 6px; padding: 6px 10px; background: #fff5f5;
+    border-radius: 8px; font-size: 12px; color: #c53030; font-weight: 600;
+    display: flex; align-items: center; gap: 4px;
+  }
+
   /* 表单 */
   .form-section {
     background: white; border-radius: 14px;
@@ -568,6 +606,12 @@
       <div id="d-location-card"></div>
     </div>
 
+    <!-- 管理备注卡 - 同步扫码可见 -->
+    <div class="quick-card" id="d-admin-note-card" style="display:none">
+      <h3>📌 管理备注</h3>
+      <div id="d-admin-note-content"></div>
+    </div>
+
     <!-- 器件状态仪表盘 -->
     <div class="quick-card">
       <h3>🔩 器件功能状态</h3>
@@ -637,6 +681,12 @@
     <button class="back-btn" onclick="goBack('page-detail')">← 返回详情</button>
     <div class="detail-device-name" id="form-device-name"></div>
     <div class="detail-device-id" id="form-device-id"></div>
+  </div>
+  <div class="detail-body" style="padding:0">
+  <!-- 管理备注卡 - 扫码可见 -->
+  <div id="admin-note-card" class="admin-note-card" style="display:none">
+    <div class="anc-header">📌 管理备注 <span class="anc-badge">管理员</span></div>
+    <div id="anc-content"></div>
   </div>
   <div class="form-section">
     <div class="form-section-title">📋 基本信息</div>
@@ -1238,6 +1288,34 @@ function openDetail(deviceId) {
     </div>
   `;
 
+  // 管理备注卡 - 同步扫码可见
+  const dAdminCard = document.getElementById("d-admin-note-card");
+  const hasDNote = (currentDevice.presetNote && currentDevice.presetNote.trim()) ||
+                   (currentDevice.statusNote && currentDevice.statusNote.trim()) ||
+                   currentDevice.needRepair ||
+                   (currentDevice.shipping && currentDevice.shipping.trackingNo);
+  if (hasDNote) {
+    dAdminCard.style.display = "block";
+    let dNoteHtml = "";
+    if (currentDevice.presetNote && currentDevice.presetNote.trim()) {
+      dNoteHtml += `<div style="font-size:13px;color:#744210;line-height:1.6;padding:4px 0"><span style="font-weight:600;color:#975a16">📝 设备备注：</span>${currentDevice.presetNote}</div>`;
+    }
+    if (currentDevice.statusNote && currentDevice.statusNote.trim()) {
+      dNoteHtml += `<div style="font-size:13px;color:#744210;line-height:1.6;padding:4px 0"><span style="font-weight:600;color:#975a16">💬 状态备注：</span>${currentDevice.statusNote}</div>`;
+    }
+    if (currentDevice.needRepair) {
+      dNoteHtml += `<div style="font-size:12px;color:#c53030;font-weight:600;padding:6px 10px;background:#fff5f5;border-radius:8px;margin-top:4px">⚠️ 该设备需要维修</div>`;
+    }
+    if (currentDevice.shipping && currentDevice.shipping.trackingNo) {
+      const s = currentDevice.shipping;
+      const carrierName = CARRIER_NAMES[s.carrier] || s.carrier;
+      dNoteHtml += `<div style="font-size:12px;color:#6b46c1;padding:4px 0;margin-top:2px">📦 ${carrierName} ${s.trackingNo}${s.status === 'delivered' ? ' (已签收)' : ' (运输中)'}</div>`;
+    }
+    document.getElementById("d-admin-note-content").innerHTML = dNoteHtml;
+  } else {
+    dAdminCard.style.display = "none";
+  }
+
   // 器件状态仪表盘
   const yn = v => v === "有" ? "ok" : v === "无" ? "err" : "mute";
   const ynText = v => v === "有" ? "✅ 正常" : v === "无" ? "❌ 缺失" : "— 待检";
@@ -1484,6 +1562,63 @@ function goToCheckForm() {
   document.getElementById("form-header").className = `detail-header ${cat.catClass}`;
   document.getElementById("form-device-name").textContent = currentDevice.name;
   document.getElementById("form-device-id").textContent = currentDevice.id;
+
+  // 渲染管理备注卡 - 扫码可见
+  const noteCard = document.getElementById("admin-note-card");
+  const noteContent = document.getElementById("anc-content");
+  const hasPresetNote = currentDevice.presetNote && currentDevice.presetNote.trim();
+  const hasStatusNote = currentDevice.statusNote && currentDevice.statusNote.trim();
+  const hasRepair = currentDevice.needRepair;
+  const hasUseStatus = currentDevice.useStatus && currentDevice.useStatus.trim();
+  const hasShipping = currentDevice.shipping && currentDevice.shipping.trackingNo;
+
+  if (hasPresetNote || hasStatusNote || hasRepair || hasUseStatus || hasShipping) {
+    noteCard.style.display = "block";
+    let html = "";
+
+    // 使用状态
+    if (hasUseStatus) {
+      const statusMap = {
+        "保管地": { cls: "ok", icon: "🟢" },
+        "调用中": { cls: "warn", icon: "🟠" },
+        "待维修": { cls: "error", icon: "🔴" },
+        "招标": { cls: "info", icon: "🔵" }
+      };
+      const sm = statusMap[currentDevice.useStatus] || { cls: "info", icon: "⚪" };
+      html += `<div class="anc-item"><span class="anc-status ${sm.cls}">${sm.icon} ${currentDevice.useStatus}</span></div>`;
+    }
+
+    // 保管人 & 位置
+    if (currentDevice.owner || currentDevice.location) {
+      html += `<div class="anc-item"><span class="anc-label">📍 位置：</span>${currentDevice.location || '未知'}${currentDevice.region ? ' · ' + currentDevice.region : ''}${currentDevice.owner ? ' · 👤 ' + currentDevice.owner : ''}</div>`;
+    }
+
+    // 管理员备注 (presetNote)
+    if (hasPresetNote) {
+      html += `<div class="anc-item"><span class="anc-label">📝 备注：</span>${currentDevice.presetNote}</div>`;
+    }
+
+    // 状态备注 (statusNote)
+    if (hasStatusNote) {
+      html += `<div class="anc-item"><span class="anc-label">💬 状态备注：</span>${currentDevice.statusNote}</div>`;
+    }
+
+    // 维修提示
+    if (hasRepair) {
+      html += `<div class="anc-repair">⚠️ 该设备需要维修${currentDevice.presetNote && !hasPresetNote ? '：' + currentDevice.presetNote : ''}</div>`;
+    }
+
+    // 物流信息
+    if (hasShipping) {
+      const s = currentDevice.shipping;
+      const carrierName = CARRIER_NAMES[s.carrier] || s.carrier;
+      html += `<div class="anc-item"><span class="anc-label">📦 物流：</span>${carrierName} ${s.trackingNo}${s.status === 'delivered' ? ' (已签收)' : ' (运输中)'}</div>`;
+    }
+
+    noteContent.innerHTML = html;
+  } else {
+    noteCard.style.display = "none";
+  }
   document.getElementById("f-checker").value = "";
   document.getElementById("f-location").value = currentDevice.location || "";
   document.getElementById("f-refno").value = "";
