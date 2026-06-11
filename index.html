@@ -1302,8 +1302,9 @@ function ensureDevices(catKey) {
       if (preset) {
         d.owner = preset.owner;
         d.region = preset.region;
-        // location 不从预设覆盖，保留实际最新位置（仅首次初始化时使用预设）
-        if (!d.location || d.location === "（待填写）" || d.location === "") {
+        // 没有检查记录时，location跟随预设更新（有记录则保留实际位置）
+        const hasRealHistory = d.logs && d.logs.length > 0;
+        if (!hasRealHistory) {
           d.location = preset.location;
         }
         d.useStatus = preset.status;
