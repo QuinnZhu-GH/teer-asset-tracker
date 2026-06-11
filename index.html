@@ -1497,8 +1497,8 @@ function renderDeviceList() {
         else if (d.shipping && d.shipping.trackingNo) extraHtml = ` <span style="color:#6b46c1;font-size:9px;font-weight:600">📦</span>`;
 
         html += `
-          <div class="dev-chip" data-device-id="${d.id}"
-            ontouchstart="handleLongPress.call(this, '${d.id}')" ontouchend="cancelLongPress.call(this)" onclick="openDetail('${d.id}')">
+          <div class="dev-chip" onclick="openDetail('${d.id}')"
+            ontouchstart="handleLongPress('${d.id}')" ontouchend="cancelLongPress()">
             <div class="st-dot ${dotCls}"></div>
             <span class="dev-chip-id">${d.id.replace(cat.idPrefix + '-', '')}${extraHtml}</span>
             <span class="dev-chip-loc">${d._latestLoc || '未知'}${xrHtml}</span>
@@ -1533,8 +1533,14 @@ function toggleCollapse(headerEl) {
 // ============================================================
 function openDetail(deviceId) {
   try {
+  // 调试：确保页面可见
+  const detailPage = document.getElementById('page-detail');
+  if (detailPage) {
+    detailPage.style.cssText = 'display:block!important; background:#fff;';
+  }
+  
   currentDevice = devices.find(d => d.id === deviceId);
-  if (!currentDevice) { alert('未找到设备: ' + deviceId); return; }
+  if (!currentDevice) { alert('未找到设备: ' + deviceId + ' (共' + devices.length + '台)'); return; }
   const cat = CATEGORIES[currentCat];
   if (!cat) { alert('未找到分类: ' + currentCat); return; }
 
@@ -2319,23 +2325,13 @@ function goBack(pageId) {
 
 let longPressTimer = null;
 function handleLongPress(id) {
-  // 阻止默认的点击事件，避免长按也触发点击
-  this.__longPressActive = true;
-  longPressTimer = setTimeout(() => {
-    showQRModal(id);
-    this.__longPressActive = false;
-  }, 600);
+  longPressTimer = setTimeout(() => showQRModal(id), 500);
 }
 function cancelLongPress() {
-  if (longPressTimer) clearTimeout(longPressTimer);
-  const self = this;
-  // 短按时手动触发点击（解决 ontouch 阻止 onclick 的兼容问题）
-  setTimeout(function() {
-    if (!self.__longPressActive && self.getAttribute('data-device-id')) {
-      openDetail(self.getAttribute('data-device-id'));
-    }
-    self.__longPressActive = false;
-  }, 10);
+  if (longPressTimer) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
 }
 
 let toastTimer = null;
