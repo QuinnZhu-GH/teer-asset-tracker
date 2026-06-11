@@ -73,60 +73,60 @@
     backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
   }
 
-  /* 红色系 - 粗色条 + 可见底色 */
+  /* 黑灰极简 - 6级灰度 */
   .region-hd1 {
-    --rc-bg: #fff0f0; --rc-text: #7f1d1d; --rc-accent: #991b1b; --rc-light: #fee2e2;
-    --rc-border: #fca5a5; --rc-glow: none;
+    --rc-bg: #f5f5f5; --rc-text: #0a0a0a; --rc-accent: #111111; --rc-light: #e8e8e8;
+    --rc-border: #d4d4d4; --rc-glow: none;
   }
   .region-hd1 .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; }
   .region-hd1 .region-header::after { background: var(--rc-border); }
-  .region-hd1 .rh-count { background: var(--rc-light); color: var(--rc-accent); font-weight:800; border-radius:20px;padding:3px 12px;}
-  .region-hd1 { border-left: 5px solid #991b1b; box-shadow: none; }
+  .region-hd1 .rh-count { background: #eee; color: #333; font-weight:800;border-radius:20px;padding:3px 12px;}
+  .region-hd1 { border-left: 5px solid #111; box-shadow: none; }
 
   .region-hd2 {
-    --rc-bg: #fef2f2; --rc-text: #991b1b; --rc-accent: #b91c1c; --rc-light: #fecaca;
-    --rc-border: #f87171; --rc-glow: none;
+    --rc-bg: #fafafa; --rc-text: #1a1a1a; --rc-accent: #262626; --rc-light: #f0f0f0;
+    --rc-border: #ccc; --rc-glow: none;
   }
   .region-hd2 .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; }
-  .region-hd2 .region-header::after { background: var(--rc-border); opacity:0.4; }
-  .region-hd2 .rh-count { background: var(--rc-light); color: #991b1b; font-weight:800;border-radius:20px;padding:3px 12px;}
-  .region-hd2 { border-left: 5px solid #b91c1c; box-shadow: none; }
+  .region-hd2 .region-header::after { background: var(--rc-border); opacity:0.6; }
+  .region-hd2 .rh-count { background: #eee; color: #444; font-weight:800;border-radius:20px;padding:3px 12px;}
+  .region-hd2 { border-left: 5px solid #262626; box-shadow: none; }
 
   .region-hz {
-    --rc-bg: #ffe4e4; --rc-text: #a82828; --rc-accent: #dc2626; --rc-light: #fecdd6;
-    --rc-border: #ef9a9a; --rc-glow: none;
+    --rc-bg: white; --rc-text: #2d2d2d; --rc-accent: #404040; --rc-light: #f5f5f5;
+    --rc-border: #bbb; --rc-glow: none;
   }
-  .region-hz .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; letter-spacing:0.5px;}
-  .region-hz .region-header::after { background: var(--rc-border); opacity:0.35; }
-  .region-hz .rh-count { background: #fff; color: #dc2626; font-weight:800;border-radius:20px;padding:3px 12px;}
-  .region-hz { border-left: 5px solid #dc2626; box-shadow: none; }
+  .region-hz .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:800;}
+  .region-hz .region-header::after { background: #eee; }
+  .region-hz .rh-count { background: #f5f5f5; color: #555; font-weight:700;border-radius:20px;padding:3px 12px;}
+  .region-hz { border-left: 5px solid #404040; box-shadow: none; }
 
   .region-hb {
-    --rc-bg: #ffeded; --rc-text: #b91c1c; --rc-accent: #ef4444; --rc-light: #fed7d7;
-    --rc-border: #fca5a5; --rc-glow: none;
+    --rc-bg: #fcfcfc; --rc-text: #404040; --rc-accent: #666666; --rc-light: #f8f8f8;
+    --rc-border: #ddd; --rc-glow: none;
   }
-  .region-hb .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; letter-spacing:0.5px;}
-  .region-hb .region-header::after { background: var(--rc-border); opacity:0.3; }
-  .region-hb .rh-count { background: #fff; color: #ef4444; font-weight:800;border-radius:20px;padding:3px 12px;}
-  .region-hb { border-left: 5px solid #ef4444; box-shadow: none; }
+  .region-hb .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:800;}
+  .region-hb .region-header::after { background: #f0f0f0; }
+  .region-hb .rh-count { background: #f8f8f8; color: #666; font-weight:700;border-radius:20px;padding:3px 12px;}
+  .region-hb { border-left: 5px solid #666; box-shadow: none; }
 
   .region-hn {
-    --rc-bg: #ffecec; --rc-text: #dc2626; --rc-accent: #f87171; --rc-light: #fee5e5;
-    --rc-border: #fcc; --rc-glow: none;
+    --rc-bg: #fefefe; --rc-text: #525252; --rc-accent: #888888; --rc-light: #fafafa;
+    --rc-border: #e5e5e5; --rc-glow: none;
   }
-  .region-hn .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; letter-spacing:0.5px; }
-  .region-hn .region-header::after { background: var(--rc-border); opacity:0.25; }
-  .region-hn .rh-count { background: #fff; color: #dc2626; font-weight:900;border-radius:20px;padding:3px 14px;}
-  .region-hn { border-left: 5px solid #f87171; box-shadow: none; }
+  .region-hn .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:800; letter-spacing:0.3px; }
+  .region-hn .region-header::after { background: #f2f2f2; }
+  .region-hn .rh-count { background: #fafafa; color: #777; font-weight:700;border-radius:20px;padding:3px 14px;}
+  .region-hn { border-left: 5px solid #888; box-shadow: none; }
 
   .region-xq {
-    --rc-bg: #fff5f5; --rc-text: #ef4444; --rc-accent: #fb7185; --rc-light: #ffe4e6;
-    --rc-border: #fda4af; --rc-glow: none;
+    --rc-bg: #fff; --rc-text: #666; --rc-accent: #aaaaaa; --rc-light: #fcfcfc;
+    --rc-border: #ebebeb; --rc-glow: none;
   }
-  .region-xq .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:900; letter-spacing:0.5px; }
-  .region-xq .region-header::after { background: var(--rc-border); opacity:0.25; }
-  .region-xq .rh-count { background: #fff; color: #f43f5e; font-weight:900;border-radius:20px;padding:3px 14px;}
-  .region-xq { border-left: 5px solid #fb7185; box-shadow: none; }
+  .region-xq .region-header { background: var(--rc-bg); color: var(--rc-text); font-weight:800; letter-spacing:0.3px; border-bottom:1px solid #f5f5f5;}
+  .region-xq .region-header::after { display:none; }
+  .region-xq .rh-count { background: #fcfcfc; color: #999; font-weight:700;border-radius:20px;padding:3px 14px;}
+  .region-xq { border-left: 5px solid #aaa; box-shadow: none; }
 
   .region-devices {
     padding: 10px 12px 12px;
@@ -161,9 +161,9 @@
     flex-shrink: 0; position: relative;
     margin-bottom: 2px;
   }
-  .st-dot.ok { background: #5c1212; }
-  .st-dot.error { background: #dc2626; box-shadow: 0 0 5px rgba(220,38,38,0.35); }
-  .st-dot.warn { background: #a82828; }
+  .st-dot.ok { background: #222; }
+  .st-dot.error { background: #555; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+  .st-dot.warn { background: #888; }
   .st-dot.unchecked { background: #ccc; }
 
   .dev-chip-id {
@@ -1091,12 +1091,12 @@ const DEVICE_PRESETS = {
 // 地区配置（按公司组织架构）
 // ============================================================
 const REGION_CONFIG = {
-  "华东一区": { name: "华东一区", manager: "石蕙", color: "#991b1b" },
-  "华东二区": { name: "华东二区", manager: "孙万霄(代)", color: "#a82828" },
-  "华中区":   { name: "华中区",   manager: "冯景", color: "#c0392b" },
-  "华北区":   { name: "华北区",   manager: "张媤媪", color: "#dc2626" },
-  "华南区":   { name: "华南区",   manager: "王文韬(代)", color: "#ef4444" },
-  "西区":     { name: "西区",     manager: "王若仲", color: "#f87171" }
+  "华东一区": { name: "华东一区", manager: "石蕙", color: "#111111" },
+  "华东二区": { name: "华东二区", manager: "孙万霄(代)", color: "#262626" },
+  "华中区":   { name: "华中区",   manager: "冯景", color: "#404040" },
+  "华北区":   { name: "华北区",   manager: "张媤媪", color: "#666666" },
+  "华南区":   { name: "华南区",   manager: "王文韬(代)", color: "#888888" },
+  "西区":     { name: "西区",     manager: "王若仲", color: "#aaaaaa" }
 };
 
 // 位置 → 地区映射（按公司组织架构划分，非纯地理）
@@ -1446,13 +1446,13 @@ function renderDeviceList() {
 
   // 顶部汇总条
   let html = `<div class="dash-summary">
-    <div class="sum-item"><div class="sum-val" style="color:#5c1212;font-weight:800">${devices.length}</div><div class="sum-label">总计</div></div>
-    <div class="sum-item"><div class="sum-val" style="color:#374151;font-weight:700">${okCount}</div><div class="sum-label">正常</div></div>
-    <div class="sum-item"><div class="sum-val" style="color:#dc2626;font-weight:700">${errCount}</div><div class="sum-label">异常</div></div>
-    <div class="sum-item"><div class="sum-val" style="color:#a82828;font-weight:600">${warnCount}</div><div class="sum-label">注意</div></div>
-    <div class="sum-item"><div class="sum-val" style="color:#999;font-weight:600">${unchkCount}</div><div class="sum-label">待检</div></div>
-    <div class="sum-item"><div class="sum-val" style="color:#c53030;font-weight:700">${repairCount}</div><div class="sum-label">待修</div></div>
-    <div class="sum-item"><div class="sum-val" style="color:#8b1a1a;font-weight:600">${crossCount}</div><div class="sum-label">跨区</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#111;font-weight:900">${devices.length}</div><div class="sum-label">总计</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#333;font-weight:800">${okCount}</div><div class="sum-label">正常</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#666;font-weight:800">${errCount}</div><div class="sum-label">异常</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#888;font-weight:700">${warnCount}</div><div class="sum-label">注意</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#aaa;font-weight:700">${unchkCount}</div><div class="sum-label">待检</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#999;font-weight:700">${repairCount}</div><div class="sum-label">待修</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#777;font-weight:700">${crossCount}</div><div class="sum-label">跨区</div></div>
   </div>`;
 
   // 地区纵向排列
