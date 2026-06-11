@@ -8,103 +8,285 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
-    background: #f0f4f8;
+    background: #f0f2f5;
     color: #1a202c;
     min-height: 100vh;
   }
   .page { display: none; }
   .page.active { display: block; }
 
-  /* 顶部栏 - 按分类着色 */
-  .header {
-    color: white;
-    padding: 20px 16px 16px;
+  /* ===== 汇报风格全局 ===== */
+  .report-header {
+    color: white; padding: 24px 20px 20px;
     position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   }
-  .header.cat-t-teer { background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%); }
-  .header.cat-m-teer { background: linear-gradient(135deg, #5f1e3a 0%, #9f2d6a 100%); }
-  .header h1 { font-size: 18px; font-weight: 600; }
-  .header p { font-size: 12px; opacity: 0.75; margin-top: 3px; }
+  .report-header.cat-t-teer { background: linear-gradient(135deg, #0f2b44 0%, #1e5a8a 50%, #2d6a9f 100%); }
+  .report-header.cat-m-teer { background: linear-gradient(135deg, #3d0f24 0%, #7a2248 50%, #9f2d6a 100%); }
+  .report-header .rh-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .report-header .rh-title { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
+  .report-header .rh-date { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+  .report-header .rh-badge {
+    background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);
+    padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  }
 
-  /* 设备列表 */
-  .device-list { padding: 12px; }
+  /* 汇报统计条 */
+  .report-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 8px; padding: 16px 16px 8px;
+  }
+  .r-stat {
+    background: white; border-radius: 12px; padding: 14px 10px;
+    text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .r-stat .r-num { font-size: 26px; font-weight: 800; line-height: 1.1; }
+  .r-stat .r-label { font-size: 11px; color: #718096; margin-top: 4px; font-weight: 500; }
+  .r-stat .r-icon { font-size: 18px; margin-bottom: 4px; }
+
+  /* 地理分布条 */
+  .geo-bar {
+    background: white; border-radius: 14px; margin: 10px 16px;
+    padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .geo-bar h3 { font-size: 13px; color: #718096; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .geo-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .geo-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  }
+  .geo-chip .geo-count { background: rgba(255,255,255,0.6); border-radius: 4px; padding: 1px 5px; font-size: 11px; }
+
+  /* 设备卡片 - 汇报风格 */
+  .device-list { padding: 8px 16px 24px; }
   .device-card {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 10px;
-    display: flex; align-items: center;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
-    cursor: pointer;
-    transition: all 0.15s;
-    border-left: 4px solid #e2e8f0;
+    background: white; border-radius: 14px;
+    padding: 0; margin-bottom: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    overflow: hidden; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
   }
-  .device-card:active { transform: scale(0.98); }
-  .device-card.status-ok { border-left-color: #48bb78; }
-  .device-card.status-warn { border-left-color: #ed8936; }
-  .device-card.status-error { border-left-color: #fc5c7d; }
-  .device-card.status-unchecked { border-left-color: #a0aec0; }
-
-  .device-icon {
-    width: 44px; height: 44px;
-    border-radius: 10px;
+  .device-card:active { transform: scale(0.985); }
+  .dc-top { display: flex; align-items: center; padding: 14px 16px 10px; gap: 12px; }
+  .dc-icon {
+    width: 48px; height: 48px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 22px; flex-shrink: 0; margin-right: 12px;
+    font-size: 24px; flex-shrink: 0;
   }
-  .cat-t-teer .device-icon { background: #ebf8ff; }
-  .cat-m-teer .device-icon { background: #fce7f3; }
-
-  .device-info { flex: 1; min-width: 0; }
-  .device-name { font-size: 15px; font-weight: 600; color: #1a202c; }
-  .device-id { font-size: 12px; color: #718096; margin-top: 2px; }
-  .device-meta { font-size: 11px; color: #4a5568; margin-top: 3px; background: #f7fafc; padding: 2px 6px; border-radius: 4px; display: inline-block; }
-  .device-status { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #a0aec0; flex-shrink: 0; }
-  .status-dot.ok { background: #48bb78; }
-  .status-dot.warn { background: #ed8936; }
-  .status-dot.error { background: #fc5c7d; }
-  .status-text { font-size: 12px; color: #718096; }
-  .last-check { font-size: 11px; color: #a0aec0; margin-top: 2px; }
-  .arrow { color: #cbd5e0; font-size: 18px; margin-left: 8px; }
-
-  /* 统计条 */
-  .stats-bar {
-    display: flex; gap: 8px; padding: 0 12px 12px;
+  .cat-t-teer .dc-icon { background: linear-gradient(135deg, #ebf8ff, #bee3f8); }
+  .cat-m-teer .dc-icon { background: linear-gradient(135deg, #fce7f3, #fbb6ce); }
+  .dc-info { flex: 1; min-width: 0; }
+  .dc-name { font-size: 16px; font-weight: 700; color: #1a202c; }
+  .dc-id { font-size: 12px; color: #a0aec0; margin-top: 1px; }
+  .dc-status-pill {
+    padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    white-space: nowrap; flex-shrink: 0;
   }
-  .stat-chip {
-    flex: 1; background: white; border-radius: 8px;
-    padding: 10px 12px; text-align: center;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-  }
-  .stat-num { font-size: 20px; font-weight: 700; }
-  .stat-num.green { color: #48bb78; }
-  .stat-num.red { color: #fc5c7d; }
-  .stat-num.gray { color: #a0aec0; }
-  .stat-label { font-size: 11px; color: #718096; margin-top: 2px; }
+  .pill-ok { background: #f0fff4; color: #276749; }
+  .pill-warn { background: #fffaf0; color: #c05621; }
+  .pill-error { background: #fff5f5; color: #c53030; }
+  .pill-unchecked { background: #f7fafc; color: #718096; }
 
-  /* 详情页 */
-  .detail-header { color: white; padding: 16px; }
-  .detail-header.cat-t-teer { background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%); }
-  .detail-header.cat-m-teer { background: linear-gradient(135deg, #5f1e3a 0%, #9f2d6a 100%); }
+  /* 卡片信息区 */
+  .dc-meta { padding: 0 16px 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .dc-tag {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 500;
+    background: #f7fafc; color: #4a5568;
+  }
+  .dc-tag.loc { background: #ebf8ff; color: #2b6cb0; }
+  .dc-tag.owner { background: #fefcbf; color: #975a16; }
+  .dc-tag.shipping { background: #faf5ff; color: #6b46c1; }
+  .dc-tag.repair { background: #fff5f5; color: #c53030; }
+
+  /* 卡片：器件状态快览 */
+  .dc-components {
+    display: flex; gap: 0; padding: 0 16px 10px;
+  }
+  .dc-comp {
+    flex: 1; text-align: center; padding: 6px 2px;
+    border-right: 1px solid #f0f4f8;
+  }
+  .dc-comp:last-child { border-right: none; }
+  .dc-comp .comp-icon { font-size: 16px; }
+  .dc-comp .comp-label { font-size: 9px; color: #a0aec0; margin-top: 1px; }
+  .dc-comp .comp-val { font-size: 11px; font-weight: 700; margin-top: 2px; }
+  .comp-val.have { color: #48bb78; }
+  .comp-val.missing { color: #fc5c7d; }
+  .comp-val.unknown { color: #cbd5e0; }
+
+  /* 卡片：物流路径条 */
+  .dc-shipping-track {
+    padding: 8px 16px 12px; display: none;
+  }
+  .dc-shipping-track.visible { display: block; }
+  .ship-route {
+    display: flex; align-items: center; gap: 0;
+    background: #f7fafc; border-radius: 10px; padding: 8px 12px;
+  }
+  .ship-node {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 11px; color: #4a5568; font-weight: 500;
+    white-space: nowrap;
+  }
+  .ship-node .node-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .ship-node .node-dot.green { background: #48bb78; }
+  .ship-node .node-dot.blue { background: #4299e1; }
+  .ship-node .node-dot.gray { background: #cbd5e0; }
+  .ship-arrow { font-size: 12px; color: #cbd5e0; margin: 0 2px; flex-shrink: 0; }
+
+  /* 卡片：时间线预览 */
+  .dc-timeline-preview { padding: 8px 16px 12px; display: none; }
+  .dc-timeline-preview.visible { display: block; }
+  .tl-preview-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 0; font-size: 12px; color: #718096;
+  }
+  .tl-preview-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .cat-t-teer .tl-preview-dot { background: #2d6a9f; }
+  .cat-m-teer .tl-preview-dot { background: #9f2d6a; }
+  .tl-preview-time { font-size: 11px; color: #a0aec0; min-width: 80px; }
+  .tl-preview-loc { font-weight: 500; color: #4a5568; }
+  .tl-preview-more { font-size: 11px; color: #a0aec0; font-style: italic; }
+
+  /* ===== 详情页 - 汇报风格 ===== */
+  .detail-header { color: white; padding: 16px 20px 20px; }
+  .detail-header.cat-t-teer { background: linear-gradient(135deg, #0f2b44, #1e5a8a, #2d6a9f); }
+  .detail-header.cat-m-teer { background: linear-gradient(135deg, #3d0f24, #7a2248, #9f2d6a); }
   .back-btn {
     display: flex; align-items: center; gap: 6px;
-    font-size: 15px; cursor: pointer; margin-bottom: 12px;
-    opacity: 0.9; background: none; border: none; color: white;
+    font-size: 15px; cursor: pointer; margin-bottom: 10px;
+    opacity: 0.9; background: none; border: none; color: white; font-family: inherit;
   }
-  .detail-device-name { font-size: 20px; font-weight: 700; }
-  .detail-device-id { font-size: 13px; opacity: 0.75; margin-top: 3px; }
-  .detail-body { padding: 12px; }
+  .detail-device-name { font-size: 22px; font-weight: 800; }
+  .detail-device-id { font-size: 13px; opacity: 0.7; margin-top: 3px; }
 
-  .info-card {
-    background: white; border-radius: 12px;
+  /* 详情：快览卡片 */
+  .detail-body { padding: 12px 16px 24px; }
+  .quick-card {
+    background: white; border-radius: 14px;
     padding: 16px; margin-bottom: 12px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
   }
-  .info-card h3 {
-    font-size: 13px; color: #718096; font-weight: 500;
-    margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+  .quick-card h3 {
+    font-size: 12px; color: #a0aec0; font-weight: 700;
+    margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;
   }
+
+  /* 状态仪表盘 */
+  .status-dashboard {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .sd-item {
+    background: #f7fafc; border-radius: 10px; padding: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sd-icon { font-size: 22px; flex-shrink: 0; }
+  .sd-info { flex: 1; min-width: 0; }
+  .sd-label { font-size: 11px; color: #a0aec0; font-weight: 500; }
+  .sd-val { font-size: 14px; font-weight: 700; margin-top: 2px; }
+  .sd-val.ok { color: #48bb78; }
+  .sd-val.err { color: #fc5c7d; }
+  .sd-val.warn { color: #ed8936; }
+  .sd-val.mute { color: #a0aec0; }
+
+  /* 使用状态横条 */
+  .use-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: #f7fafc; border-radius: 10px; padding: 12px; margin-bottom: 8px;
+  }
+  .use-bar .use-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .use-bar .use-dot.green { background: #48bb78; }
+  .use-bar .use-dot.orange { background: #ed8936; }
+  .use-bar .use-dot.red { background: #fc5c7d; }
+  .use-bar .use-dot.blue { background: #4299e1; }
+  .use-bar .use-dot.gray { background: #cbd5e0; }
+  .use-bar .use-text { font-size: 14px; font-weight: 600; }
+  .use-bar .use-sub { font-size: 12px; color: #718096; margin-left: auto; }
+
+  /* 地点标注卡 */
+  .location-card {
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(135deg, #ebf8ff, #bee3f8);
+    border-radius: 12px; padding: 14px; margin-bottom: 8px;
+  }
+  .cat-m-teer .location-card {
+    background: linear-gradient(135deg, #fce7f3, #fbb6ce);
+  }
+  .loc-pin { font-size: 28px; flex-shrink: 0; }
+  .loc-info { flex: 1; }
+  .loc-name { font-size: 16px; font-weight: 700; color: #1a202c; }
+  .loc-detail { font-size: 12px; color: #4a5568; margin-top: 2px; }
+
+  /* 物流路线图 */
+  .logistics-route {
+    background: #f7fafc; border-radius: 12px; padding: 16px; margin-bottom: 8px;
+  }
+  .lr-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .lr-title { font-size: 13px; font-weight: 700; color: #2d3748; }
+  .lr-badge { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .lr-badge.transit { background: #ebf8ff; color: #2b6cb0; }
+  .lr-badge.delivered { background: #f0fff4; color: #276749; }
+  .lr-badge.pending { background: #fffaf0; color: #c05621; }
+  .lr-nodes { display: flex; flex-direction: column; gap: 0; }
+  .lr-node {
+    display: flex; gap: 10px; padding: 8px 0; position: relative;
+  }
+  .lr-node::before {
+    content: ''; position: absolute; left: 11px; top: 26px; bottom: -8px;
+    width: 2px; background: #e2e8f0;
+  }
+  .lr-node:last-child::before { display: none; }
+  .lr-dot {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; flex-shrink: 0; background: white;
+    border: 2px solid #e2e8f0;
+  }
+  .lr-dot.current { background: #4299e1; border-color: #90cdf4; color: white; }
+  .lr-dot.done { background: #48bb78; border-color: #9ae6b4; color: white; }
+  .lr-dot.pending-dot { background: white; border-color: #e2e8f0; color: #cbd5e0; }
+  .lr-node-info { flex: 1; padding-top: 2px; }
+  .lr-node-loc { font-size: 13px; font-weight: 600; color: #1a202c; }
+  .lr-node-time { font-size: 11px; color: #a0aec0; margin-top: 2px; }
+  .lr-node-desc { font-size: 12px; color: #718096; margin-top: 1px; }
+
+  /* 详情时间轴 - 增强版 */
+  .timeline-enhanced { padding: 4px 0; }
+  .te-item {
+    display: flex; gap: 12px; padding: 12px 0; position: relative;
+  }
+  .te-item::before {
+    content: ''; position: absolute;
+    left: 15px; top: 36px; bottom: -12px;
+    width: 2px; background: #e2e8f0;
+  }
+  .te-item:last-child::before { display: none; }
+  .te-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0; background: white;
+    border: 2px solid #e2e8f0;
+  }
+  .cat-t-teer .te-dot { border-color: #90cdf4; background: #ebf8ff; }
+  .cat-m-teer .te-dot { border-color: #fbb6ce; background: #fce7f3; }
+  .te-content { flex: 1; min-width: 0; }
+  .te-header { display: flex; justify-content: space-between; align-items: center; }
+  .te-loc { font-size: 15px; font-weight: 700; color: #1a202c; }
+  .te-time { font-size: 11px; color: #a0aec0; font-weight: 500; }
+  .te-checker { font-size: 12px; color: #718096; margin-top: 3px; }
+  .te-components { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+  .te-comp-tag {
+    padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600;
+  }
+  .te-comp-tag.ok { background: #f0fff4; color: #276749; }
+  .te-comp-tag.err { background: #fff5f5; color: #c53030; }
+  .te-refno { margin-top: 4px; font-size: 11px; color: #6b46c1; font-weight: 600; }
+
+  /* 信息行 */
   .info-row {
     display: flex; justify-content: space-between; align-items: flex-start;
     padding: 8px 0; border-bottom: 1px solid #f7fafc;
@@ -123,63 +305,31 @@
   .badge-error { background: #fff5f5; color: #c53030; }
   .badge-unchecked { background: #f7fafc; color: #718096; }
 
-  /* 时间轴 */
-  .timeline { padding: 8px 16px 16px; }
-  .timeline-item { display: flex; gap: 12px; padding: 10px 0; position: relative; }
-  .timeline-item::before {
-    content: ''; position: absolute;
-    left: 7px; top: 26px; bottom: -10px;
-    width: 2px; background: #e2e8f0;
+  /* 快递绑定区 */
+  .shipping-input-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+  .shipping-input-row select, .shipping-input-row input {
+    border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; font-size: 13px; outline: none; font-family: inherit;
   }
-  .timeline-item:last-child::before { display: none; }
-  .tl-dot {
-    width: 16px; height: 16px; border-radius: 50%;
-    border: 2px solid #bee3f8; flex-shrink: 0; margin-top: 2px;
+  .shipping-input-row select { width: 110px; flex-shrink: 0; background: white; }
+  .shipping-input-row input { flex: 1; min-width: 0; }
+  .shipping-btn {
+    padding: 8px 16px; border-radius: 8px; border: none; font-size: 13px; cursor: pointer; font-weight: 600; font-family: inherit;
+    transition: all 0.15s;
   }
-  .cat-t-teer .tl-dot { background: #2d6a9f; border-color: #bee3f8; }
-  .cat-m-teer .tl-dot { background: #9f2d6a; border-color: #fbb6ce; }
-  .tl-content { flex: 1; }
-  .tl-location { font-size: 14px; font-weight: 600; color: #1a202c; }
-  .tl-time { font-size: 12px; color: #a0aec0; margin-top: 2px; }
-  .tl-checker { font-size: 12px; color: #718096; margin-top: 2px; }
-  .tl-status { margin-top: 4px; }
-
-  /* 检查记录管理 */
-  .records-container { padding: 12px 16px 24px; }
-  .record-card {
-    background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.06); position: relative;
-  }
-  .record-card .record-header {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
-  }
-  .record-card .record-time { font-size: 14px; font-weight: 600; color: #1a202c; }
-  .record-card .record-checker { font-size: 12px; color: #718096; }
-  .record-card .record-actions { display: flex; gap: 6px; }
-  .record-card .record-actions button {
-    border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px;
-    font-weight: 500; cursor: pointer; font-family: inherit;
-  }
-  .record-card .btn-edit { background: #ebf4ff; color: #3182ce; }
-  .record-card .btn-delete { background: #fff5f5; color: #e53e3e; }
-  .record-card .record-body { font-size: 13px; color: #4a5568; line-height: 1.8; }
-  .record-card .record-body .record-field { display: flex; justify-content: space-between; }
-  .record-card .record-body .record-field-label { color: #718096; flex-shrink: 0; }
-  .record-card .record-body .record-field-value { color: #1a202c; text-align: right; }
-  .record-card .record-note { margin-top: 8px; padding: 8px; background: #f7fafc; border-radius: 8px; font-size: 12px; color: #4a5568; }
-  .edit-field { margin-bottom: 14px; }
-  .edit-field label { display: block; font-size: 13px; color: #718096; margin-bottom: 4px; font-weight: 500; }
-  .edit-field input, .edit-field textarea, .edit-field select {
-    width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 10px;
-    font-size: 14px; font-family: inherit; background: white; box-sizing: border-box;
-  }
-  .edit-field input:focus, .edit-field textarea:focus { border-color: #667eea; outline: none; }
-  .edit-field textarea { height: 60px; resize: vertical; }
+  .shipping-btn:active { transform: scale(0.96); }
+  .shipping-btn.bind { background: #2b6cb0; color: white; }
+  .shipping-btn.unbind { background: #fff5f5; color: #c53030; margin-left: 8px; }
+  .shipping-btn.refresh { background: #ebf8ff; color: #2b6cb0; margin-left: 8px; }
+  .shipping-info { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .shipping-carrier { font-size: 13px; color: #2d3748; font-weight: 600; background: #edf2f7; padding: 3px 8px; border-radius: 4px; }
+  .shipping-no { font-size: 13px; color: #4a5568; font-family: 'SF Mono', 'Consolas', monospace; }
+  .shipping-no a { color: #2b6cb0; text-decoration: none; }
+  .shipping-no a:hover { text-decoration: underline; }
 
   /* 媒体 */
   .media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
   .media-thumb {
-    aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+    aspect-ratio: 1; border-radius: 10px; overflow: hidden;
     background: #edf2f7; cursor: pointer; position: relative;
   }
   .media-thumb img, .media-thumb video { width: 100%; height: 100%; object-fit: cover; }
@@ -198,14 +348,14 @@
 
   /* 表单 */
   .form-section {
-    background: white; border-radius: 12px;
+    background: white; border-radius: 14px;
     margin: 12px; overflow: hidden;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
   }
   .form-section-title {
-    font-size: 13px; color: #718096; font-weight: 500;
+    font-size: 12px; color: #a0aec0; font-weight: 700;
     padding: 14px 16px 8px; border-bottom: 1px solid #f0f4f8;
-    background: #fafafa; text-transform: uppercase; letter-spacing: 0.5px;
+    background: #fafbfc; text-transform: uppercase; letter-spacing: 1px;
   }
   .form-item {
     padding: 14px 16px; border-bottom: 1px solid #f7fafc;
@@ -304,7 +454,7 @@
     cursor: pointer; font-family: inherit;
   }
 
-  /* 二维码弹层 */
+  /* 模态 */
   .modal-overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.6); z-index: 500;
@@ -327,7 +477,36 @@
   .modal-btn.primary { background: #1e3a5f; color: white; }
   .modal-btn.secondary { background: #f7fafc; color: #1a202c; }
 
-  /* 空状态 */
+  /* 检查记录管理 */
+  .records-container { padding: 12px 16px 24px; }
+  .record-card {
+    background: white; border-radius: 14px; padding: 16px; margin-bottom: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05); position: relative;
+  }
+  .record-card .record-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .record-card .record-time { font-size: 14px; font-weight: 600; color: #1a202c; }
+  .record-card .record-checker { font-size: 12px; color: #718096; }
+  .record-card .record-actions { display: flex; gap: 6px; }
+  .record-card .record-actions button {
+    border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px;
+    font-weight: 500; cursor: pointer; font-family: inherit;
+  }
+  .record-card .btn-edit { background: #ebf4ff; color: #3182ce; }
+  .record-card .btn-delete { background: #fff5f5; color: #e53e3e; }
+  .record-card .record-body { font-size: 13px; color: #4a5568; line-height: 1.8; }
+  .record-card .record-body .record-field { display: flex; justify-content: space-between; }
+  .record-card .record-body .record-field-label { color: #718096; flex-shrink: 0; }
+  .record-card .record-body .record-field-value { color: #1a202c; text-align: right; }
+  .record-card .record-note { margin-top: 8px; padding: 8px; background: #f7fafc; border-radius: 8px; font-size: 12px; color: #4a5568; }
+  .edit-field { margin-bottom: 14px; }
+  .edit-field label { display: block; font-size: 13px; color: #718096; margin-bottom: 4px; font-weight: 500; }
+  .edit-field input, .edit-field textarea, .edit-field select {
+    width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 10px;
+    font-size: 14px; font-family: inherit; background: white; box-sizing: border-box;
+  }
+  .edit-field input:focus, .edit-field textarea:focus { border-color: #667eea; outline: none; }
+  .edit-field textarea { height: 60px; resize: vertical; }
+
   .empty-state { text-align: center; padding: 32px; color: #a0aec0; font-size: 14px; }
   .empty-state .empty-icon { font-size: 40px; margin-bottom: 8px; }
 
@@ -349,59 +528,27 @@
     vertical-align: middle; margin-right: 8px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* 快递追踪 */
-  .shipping-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
-  .shipping-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  .shipping-header h3 { font-size: 13px; color: #718096; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
-  .shipping-status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-  .shipping-status-badge.in_transit { background: #ebf8ff; color: #2b6cb0; }
-  .shipping-status-badge.delivered { background: #f0fff4; color: #276749; }
-  .shipping-status-badge.pending { background: #fffaf0; color: #c05621; }
-  .shipping-input-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
-  .shipping-input-row select, .shipping-input-row input {
-    border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; font-size: 13px; outline: none; font-family: inherit;
-  }
-  .shipping-input-row select { width: 110px; flex-shrink: 0; background: white; }
-  .shipping-input-row input { flex: 1; min-width: 0; }
-  .shipping-btn {
-    padding: 8px 16px; border-radius: 8px; border: none; font-size: 13px; cursor: pointer; font-weight: 600; font-family: inherit;
-    transition: all 0.15s;
-  }
-  .shipping-btn:active { transform: scale(0.96); }
-  .shipping-btn.bind { background: #2b6cb0; color: white; }
-  .shipping-btn.unbind { background: #fff5f5; color: #c53030; margin-left: 8px; }
-  .shipping-btn.refresh { background: #ebf8ff; color: #2b6cb0; margin-left: 8px; }
-  .shipping-info { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .shipping-carrier { font-size: 13px; color: #2d3748; font-weight: 600; background: #edf2f7; padding: 3px 8px; border-radius: 4px; }
-  .shipping-no { font-size: 13px; color: #4a5568; font-family: 'SF Mono', 'Consolas', monospace; }
-  .shipping-no a { color: #2b6cb0; text-decoration: none; }
-  .shipping-no a:hover { text-decoration: underline; }
-  .ship-timeline { margin-top: 12px; }
-  .ship-tl-item { display: flex; gap: 10px; padding: 8px 0; position: relative; }
-  .ship-tl-item::before { content: ''; position: absolute; left: 7px; top: 22px; bottom: -8px; width: 2px; background: #e2e8f0; }
-  .ship-tl-item:last-child::before { display: none; }
-  .ship-tl-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #cbd5e0; flex-shrink: 0; margin-top: 2px; background: white; }
-  .ship-tl-dot.latest { background: #2b6cb0; border-color: #90cdf4; }
-  .ship-tl-content { flex: 1; }
-  .ship-tl-desc { font-size: 13px; color: #1a202c; }
-  .ship-tl-loc { font-size: 12px; color: #718096; margin-top: 2px; }
-  .ship-tl-time { font-size: 11px; color: #a0aec0; margin-top: 2px; }
 </style>
 </head>
 <body>
 
-<!-- ===== 页面1：设备列表 ===== -->
+<!-- ===== 页面1：设备列表 - 汇报风格 ===== -->
 <div id="page-list" class="page active">
-  <div class="header" id="list-header">
-    <h1 id="list-title">🏥 TEER模拟器资产管理</h1>
-    <p id="list-subtitle">点击设备卡片查看详情 · 长按弹出二维码</p>
+  <div class="report-header" id="list-header">
+    <div class="rh-top">
+      <div>
+        <div class="rh-title" id="list-title">TEER模拟器资产管理</div>
+        <div class="rh-date" id="list-date"></div>
+      </div>
+      <div class="rh-badge" id="list-badge">—</div>
+    </div>
   </div>
-  <div class="stats-bar" id="stats-bar"></div>
+  <div class="report-stats" id="report-stats"></div>
+  <div class="geo-bar" id="geo-bar"></div>
   <div class="device-list" id="device-list-container"></div>
 </div>
 
-<!-- ===== 页面2：设备详情 ===== -->
+<!-- ===== 页面2：设备详情 - 汇报风格 ===== -->
 <div id="page-detail" class="page">
   <div class="detail-header" id="detail-header">
     <button class="back-btn" onclick="goBack('page-list')">← 返回列表</button>
@@ -409,46 +556,34 @@
     <div class="detail-device-id" id="detail-id"></div>
   </div>
   <div class="detail-body">
-    <div class="info-card">
-      <h3>📋 基本信息</h3>
-      <div class="info-row"><span class="info-label">资产编号</span><span class="info-value" id="d-assetno"></span></div>
-      <div class="info-row"><span class="info-label">分类</span><span class="info-value" id="d-category"></span></div>
-      <div class="info-row"><span class="info-label">所属区域</span><span class="info-value" id="d-region"></span></div>
-      <div class="info-row"><span class="info-label">常规保管位置</span><span class="info-value" id="d-location"></span></div>
-      <div class="info-row"><span class="info-label">常规保管人</span><span class="info-value" id="d-owner"></span></div>
-      <div class="info-row" id="d-statusnote-row"><span class="info-label">状态备注</span><span class="info-value" id="d-statusnote" style="cursor:pointer;color:#2b6cb0" onclick="editStatusNote()">—</span></div>
-      <div class="info-row" id="d-refno-row" style="display:none"><span class="info-label">关联单号</span><span class="info-value" id="d-refno" style="color:#2b6cb0;font-weight:600"></span></div>
+    <!-- 使用状态条 -->
+    <div class="quick-card" id="qc-status">
+      <h3>📊 使用状态</h3>
+      <div id="d-use-bar-container"></div>
     </div>
-    <div class="info-card">
-      <h3>📡 当前状态</h3>
-      <div class="info-row"><span class="info-label">使用状态</span><span class="info-value" id="d-usestatus"></span></div>
-      <div class="info-row"><span class="info-label">需要维修</span><span class="info-value" id="d-repair"></span></div>
-      <div class="info-row" id="d-presetnote-row" style="display:none"><span class="info-label">备注</span><span class="info-value" id="d-presetnote" style="color:#9b2c2c;font-size:13px"></span></div>
+
+    <!-- 地点标注卡 -->
+    <div class="quick-card">
+      <h3>📍 当前位置</h3>
+      <div id="d-location-card"></div>
     </div>
-    <div class="info-card">
-      <h3>🔍 目前状态</h3>
-      <div class="info-row"><span class="info-label">扩张鞘</span><span class="info-value" id="d-dilator"></span></div>
-      <div class="info-row"><span class="info-label">心脏模型</span><span class="info-value" id="d-heartmodel"></span></div>
-      <div class="info-row"><span class="info-label">导引鞘</span><span class="info-value" id="d-guidesheath"></span></div>
-      <div class="info-row"><span class="info-label">瓣膜夹</span><span class="info-value" id="d-clip"></span></div>
-      <div class="info-row" id="d-clipfunc-row" style="display:none"><span class="info-label">瓣膜夹功能</span><span class="info-value" id="d-clipfunc" style="color:#9b2c2c;font-size:13px"></span></div>
-      <div class="info-row"><span class="info-label">检查时间</span><span class="info-value" id="d-checktime"></span></div>
-      <div class="info-row" id="d-anomaly-row" style="display:none"><span class="info-label">异常记录</span><span class="info-value" id="d-anomaly" style="color:#c53030"></span></div>
+
+    <!-- 器件状态仪表盘 -->
+    <div class="quick-card">
+      <h3>🔩 器件功能状态</h3>
+      <div class="status-dashboard" id="d-status-dashboard"></div>
     </div>
-    <div class="info-card" id="refno-card" style="display:none">
+
+    <!-- 关联单号追踪 -->
+    <div class="quick-card" id="refno-card" style="display:none">
       <h3>🔗 关联单号追踪</h3>
-      <div id="d-refno-card-content" style="font-size:14px;color:#2b6cb0;font-weight:600;margin-bottom:8px"></div>
+      <div id="d-refno-card-content" style="font-size:15px;color:#6b46c1;font-weight:700;margin-bottom:8px"></div>
       <button class="submit-btn" style="background:linear-gradient(135deg,#805ad5,#9f7aea);box-shadow:0 4px 14px rgba(128,90,213,0.3);padding:10px;font-size:14px;width:100%;margin:0" onclick="trackRefNo()">🔍 查询单号状态</button>
     </div>
-    <div class="info-card">
-      <h3>📍 位置追踪历史</h3>
-      <div class="timeline" id="d-timeline"></div>
-    </div>
-    <div class="shipping-card" id="shipping-card">
-      <div class="shipping-header">
-        <h3>📦 快递追踪</h3>
-        <span class="shipping-status-badge pending" id="d-ship-badge">未绑定</span>
-      </div>
+
+    <!-- 快递追踪路线图 -->
+    <div class="quick-card" id="shipping-card">
+      <h3>📦 快递追踪</h3>
       <div id="shipping-bind-row" class="shipping-input-row">
         <select id="f-ship-carrier">
           <option value="">选择快递</option>
@@ -474,13 +609,23 @@
           <button class="shipping-btn unbind" onclick="unbindShipping()">✕ 解绑</button>
         </div>
       </div>
-      <div class="ship-timeline" id="d-ship-timeline"></div>
+      <div id="d-ship-timeline"></div>
     </div>
-    <div class="info-card">
+
+    <!-- 时间线历史 -->
+    <div class="quick-card">
+      <h3>📅 检查时间线</h3>
+      <div class="timeline-enhanced" id="d-timeline"></div>
+    </div>
+
+    <!-- 媒体记录 -->
+    <div class="quick-card">
       <h3>📸 现场媒体记录</h3>
       <div class="media-grid" id="d-media"></div>
     </div>
-    <button class="submit-btn" id="btn-check" style="margin:12px 0 0 0" onclick="goToCheckForm()">📝 发起新检查</button>
+
+    <!-- 操作按钮 -->
+    <button class="submit-btn" id="btn-check" onclick="goToCheckForm()">📝 发起新检查</button>
     <button class="submit-btn" id="btn-records" style="margin:8px 0 0 0;background:linear-gradient(135deg,#5a67d8,#667eea);box-shadow:0 4px 14px rgba(90,103,216,0.35)" onclick="openRecordsPage()">📋 检查记录管理</button>
     <button class="submit-btn" id="btn-qr" style="margin:8px 0 12px 0;background:linear-gradient(135deg,#276749,#38a169);box-shadow:0 4px 14px rgba(39,103,73,0.35)" onclick="showQRModal(currentDevice)">🔲 查看/打印二维码</button>
   </div>
@@ -656,9 +801,6 @@ const CATEGORIES = {
   }
 };
 
-// 设备固定属性预设（常规保管人、所属区域、常规保管位置）
-// 短时间内固定，后续修改时更新此对象即可
-// 数据来源：D:/模拟器管理状态表.xlsx
 const DEVICE_PRESETS = {
   "M-TEER-001": { owner: "张志伟", region: "华东2", location: "济南", status: "保管地", repair: false, note: "" },
   "M-TEER-002": { owner: "朱俊杰", region: "西北", location: "西安", status: "调用中", repair: false, note: "区内使用中" },
@@ -676,7 +818,6 @@ const DEVICE_PRESETS = {
   "M-TEER-014": { owner: "王燕", region: "西南", location: "重庆", status: "调用中", repair: true, note: "寄回杭州，CDS维护" }
 };
 
-// 当前分类（从URL读取）
 let currentCat = null;
 let devices = [];
 let currentDevice = null;
@@ -685,10 +826,10 @@ let selectedFiles = [];
 const radioSelections = {};
 
 const STORE_KEY = "teer_asset_data_v3";
-const MAX_FILE_SIZE = 500 * 1024 * 1024; // 单文件500MB
+const MAX_FILE_SIZE = 500 * 1024 * 1024;
 
 // ============================================================
-// IndexedDB 媒体存储（替代 base64 存 localStorage）
+// IndexedDB 媒体存储
 // ============================================================
 const MEDIA_DB_NAME = "TEER_MediaStore";
 const MEDIA_DB_VERSION = 1;
@@ -742,7 +883,6 @@ function mediaBlobId(deviceId, index) {
   return `${deviceId}_media_${index}`;
 }
 
-// 媒体URL缓存（避免重复创建ObjectURL）
 const mediaURLCache = {};
 
 async function getMediaURL(deviceId, index) {
@@ -795,10 +935,7 @@ function createDefaultDevices(catKey) {
 function loadData() {
   try {
     const stored = localStorage.getItem(STORE_KEY);
-    if (stored) {
-      const all = JSON.parse(stored);
-      return all;
-    }
+    if (stored) return JSON.parse(stored);
   } catch(e) {}
   return null;
 }
@@ -814,7 +951,6 @@ function ensureDevices(catKey) {
     allData[catKey] = createDefaultDevices(catKey);
     saveAllData(allData);
   } else {
-    // 合并固定属性更新（如常规保管人、区域、位置发生变化）
     allData[catKey].forEach(d => {
       const preset = DEVICE_PRESETS[d.id];
       if (preset) {
@@ -833,13 +969,12 @@ function ensureDevices(catKey) {
 
 function saveCurrentDevices() {
   let allData = loadData() || {};
-  // 清理：保存时去除media中的data字段（base64数据已迁移到IndexedDB）
   const cleanDevices = devices.map(d => {
     const clean = Object.assign({}, d);
     if (clean.media && clean.media.length > 0) {
       clean.media = clean.media.map(m => {
         const copy = Object.assign({}, m);
-        delete copy.data; // 不存base64到localStorage
+        delete copy.data;
         return copy;
       });
     }
@@ -849,41 +984,31 @@ function saveCurrentDevices() {
   saveAllData(allData);
 }
 
-// 编辑状态备注（基本信息中的不定时备注）
 function editStatusNote() {
-  const el = document.getElementById("d-statusnote");
+  const el = document.getElementById("d-statusnote-inline");
+  if (!el) return;
   const current = currentDevice.statusNote || "";
   const input = document.createElement("input");
   input.type = "text";
   input.value = current;
   input.placeholder = "输入状态备注…";
-  input.style.cssText = "width:100%;border:1px solid #cbd5e0;border-radius:4px;padding:4px 8px;font-size:14px;outline:none;";
-  const row = document.getElementById("d-statusnote-row");
-  const label = row.querySelector(".info-label");
-  const oldLabel = label.textContent;
+  input.style.cssText = "width:100%;border:1px solid #cbd5e0;border-radius:6px;padding:4px 8px;font-size:13px;outline:none;";
   el.replaceWith(input);
   input.focus();
   input.select();
-
   function save() {
     const val = input.value.trim();
     currentDevice.statusNote = val;
     saveCurrentDevices();
-    const newSpan = document.createElement("span");
-    newSpan.className = "info-value";
-    newSpan.id = "d-statusnote";
-    newSpan.style.cursor = "pointer";
-    newSpan.onclick = editStatusNote;
-    newSpan.textContent = val || "点击添加";
-    newSpan.style.color = val ? "#2b6cb0" : "#a0aec0";
-    newSpan.style.fontStyle = val ? "normal" : "italic";
-    input.replaceWith(newSpan);
+    const span = document.createElement("span");
+    span.id = "d-statusnote-inline";
+    span.textContent = val || "点击添加";
+    span.style.cssText = val ? "color:#2b6cb0;cursor:pointer" : "color:#a0aec0;font-style:italic;cursor:pointer";
+    span.onclick = editStatusNote;
+    input.replaceWith(span);
   }
   input.addEventListener("blur", save);
-  input.addEventListener("keydown", function(e) {
-    if (e.key === "Enter") { input.blur(); }
-    if (e.key === "Escape") { input.value = current; input.blur(); }
-  });
+  input.addEventListener("keydown", e => { if (e.key === "Enter") input.blur(); if (e.key === "Escape") { input.value = current; input.blur(); } });
 }
 
 // ============================================================
@@ -912,88 +1037,160 @@ function getStatusClass(dev) {
   return "status-warn";
 }
 
-function getStatusDotClass(dev) {
-  if (!dev.dilator && !dev.heartmodel && !dev.guidesheath && !dev.clip) return "";
-  const missing = [dev.dilator, dev.heartmodel, dev.guidesheath, dev.clip].filter(v => v === "无").length;
-  const hasClipIssue = dev.clip === "有" && dev.clipfunc && dev.clipfunc.length > 0 && !dev.clipfunc.includes("可用");
-  if (missing > 0 || hasClipIssue) return "error";
-  const allHave = [dev.dilator, dev.heartmodel, dev.guidesheath, dev.clip].every(v => v === "有");
-  if (allHave) return "ok";
-  return "warn";
+function getStatusPill(dev) {
+  const cls = getStatusClass(dev);
+  if (cls === "status-ok") return '<span class="dc-status-pill pill-ok">✅ 正常</span>';
+  if (cls === "status-error") return '<span class="dc-status-pill pill-error">❌ 异常</span>';
+  if (cls === "status-warn") return '<span class="dc-status-pill pill-warn">⚠️ 注意</span>';
+  return '<span class="dc-status-pill pill-unchecked">⏳ 待检</span>';
 }
 
-function getStatusText(dev) {
-  if (!dev.dilator && !dev.heartmodel && !dev.guidesheath && !dev.clip) return "尚未检查";
-  const parts = [];
-  if (dev.dilator === "无") parts.push("⚠️扩张鞘缺失");
-  if (dev.heartmodel === "无") parts.push("⚠️心脏模型缺失");
-  if (dev.guidesheath === "无") parts.push("⚠️导引鞘缺失");
-  if (dev.clip === "无") parts.push("⚠️瓣膜夹缺失");
-  if (dev.clip === "有" && dev.clipfunc && dev.clipfunc.length > 0 && !dev.clipfunc.includes("可用")) parts.push("⚠️瓣膜夹功能异常");
-  return parts.length > 0 ? parts.join(" · ") : "✅ 器件齐全功能正常";
-}
-
-function statusBadge(status) {
-  const map = {
-    "齐全": `<span class="status-badge badge-ok">✅ 齐全</span>`,
-    "正常": `<span class="status-badge badge-ok">✅ 正常</span>`,
-    "缺失": `<span class="status-badge badge-error">❌ 缺失</span>`,
-    "异常": `<span class="status-badge badge-error">❌ 异常</span>`,
-    "unchecked": `<span class="status-badge badge-unchecked">⏳ 待检查</span>`
-  };
-  return map[status] || `<span class="status-badge badge-unchecked">${status}</span>`;
+function getCompVal(v) {
+  if (v === "有") return '<span class="comp-val have">✓</span>';
+  if (v === "无") return '<span class="comp-val missing">✗</span>';
+  return '<span class="comp-val unknown">—</span>';
 }
 
 // ============================================================
-// 渲染列表
+// 渲染列表 - 汇报风格
 // ============================================================
 function renderDeviceList() {
   const cat = CATEGORIES[currentCat];
-  // 标题
   const header = document.getElementById("list-header");
-  header.className = `header ${cat.catClass}`;
+  header.className = `report-header ${cat.catClass}`;
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric", weekday: "long" });
   document.getElementById("list-title").textContent = `${cat.icon} ${cat.label}`;
-  document.getElementById("list-subtitle").textContent = `共 ${devices.length} 台 · 点击查看详情`;
+  document.getElementById("list-date").textContent = dateStr;
 
   // 统计
   const ok = devices.filter(d => getStatusClass(d) === "status-ok").length;
   const err = devices.filter(d => getStatusClass(d) === "status-error").length;
-  const unc = devices.length - ok - err;
-  document.getElementById("stats-bar").innerHTML = `
-    <div class="stat-chip"><div class="stat-num green">${ok}</div><div class="stat-label">正常</div></div>
-    <div class="stat-chip"><div class="stat-num red">${err}</div><div class="stat-label">异常</div></div>
-    <div class="stat-chip"><div class="stat-num gray">${unc}</div><div class="stat-label">待检查</div></div>
+  const warn = devices.filter(d => getStatusClass(d) === "status-warn").length;
+  const unc = devices.length - ok - err - warn;
+  const inTransit = devices.filter(d => d.shipping && d.shipping.trackingNo).length;
+  const repairCount = devices.filter(d => d.needRepair).length;
+
+  document.getElementById("list-badge").textContent = `共 ${devices.length} 台`;
+
+  document.getElementById("report-stats").innerHTML = `
+    <div class="r-stat"><div class="r-icon">✅</div><div class="r-num" style="color:#48bb78">${ok}</div><div class="r-label">正常</div></div>
+    <div class="r-stat"><div class="r-icon">❌</div><div class="r-num" style="color:#fc5c7d">${err}</div><div class="r-label">异常</div></div>
+    <div class="r-stat"><div class="r-icon">📦</div><div class="r-num" style="color:#6b46c1">${inTransit}</div><div class="r-label">运输中</div></div>
+    <div class="r-stat"><div class="r-icon">🔧</div><div class="r-num" style="color:#ed8936">${repairCount}</div><div class="r-label">待维修</div></div>
   `;
 
-  // 列表
+  // 地理分布
+  const geoMap = {};
+  devices.forEach(d => {
+    const loc = d.location || "未知";
+    if (!geoMap[loc]) geoMap[loc] = [];
+    geoMap[loc].push(d);
+  });
+  const geoColors = ["#ebf8ff,#2b6cb0", "#fce7f3,#9f2d6a", "#fefcbf,#975a16", "#f0fff4,#276749", "#fff5f5,#c53030", "#faf5ff,#6b46c1", "#fffaf0,#c05621", "#ebf4ff,#3182ce"];
+  let geoIdx = 0;
+  const geoHtml = Object.entries(geoMap).map(([loc, devs]) => {
+    const colors = geoColors[geoIdx % geoColors.length].split(",");
+    const statusIcons = devs.map(d => {
+      const cls = getStatusClass(d);
+      if (cls === "status-ok") return "🟢";
+      if (cls === "status-error") return "🔴";
+      if (cls === "status-warn") return "🟡";
+      return "⚪";
+    }).join("");
+    geoIdx++;
+    return `<span class="geo-chip" style="background:${colors[0]};color:${colors[1]}">📍 ${loc} <span class="geo-count">${devs.length}台</span> ${statusIcons}</span>`;
+  }).join("");
+  document.getElementById("geo-bar").innerHTML = `<h3>📍 地理分布</h3><div class="geo-chips">${geoHtml}</div>`;
+
+  // 设备卡片
   const container = document.getElementById("device-list-container");
   container.innerHTML = devices.map(d => {
     const cls = getStatusClass(d);
-    const dotCls = getStatusDotClass(d);
-    const statusText = getStatusText(d);
-    const lastCheck = d.lastCheck ? `最近检查：${d.lastCheck}` : "尚未检查";
+    const catCls = cat.catClass;
+    const pill = getStatusPill(d);
+
+    // 器件快览
+    const comps = `
+      <div class="dc-comp"><div class="comp-icon">🔧</div><div class="comp-label">扩张鞘</div>${getCompVal(d.dilator)}</div>
+      <div class="dc-comp"><div class="comp-icon">❤️</div><div class="comp-label">心脏模型</div>${getCompVal(d.heartmodel)}</div>
+      <div class="dc-comp"><div class="comp-icon">📏</div><div class="comp-label">导引鞘</div>${getCompVal(d.guidesheath)}</div>
+      <div class="dc-comp"><div class="comp-icon">📎</div><div class="comp-label">瓣膜夹</div>${getCompVal(d.clip)}</div>
+    `;
+
+    // 物流路径条
+    let shipTrackHtml = '';
+    if (d.shipping && d.shipping.trackingNo) {
+      const s = d.shipping;
+      const tl = s.timeline || [];
+      const from = tl.length > 0 ? (tl[tl.length-1].location || "发货地") : "发货地";
+      const to = d.location || "目的地";
+      const isDelivered = s.status === "delivered";
+      const isTransit = s.status === "in_transit";
+      const carrierName = CARRIER_NAMES[s.carrier] || "";
+      shipTrackHtml = `
+        <div class="dc-shipping-track visible">
+          <div class="ship-route">
+            <div class="ship-node"><div class="node-dot green"></div>${from || "始发"}</div>
+            <div class="ship-arrow">→</div>
+            ${isTransit ? `<div class="ship-node"><div class="node-dot blue"></div>运输中</div><div class="ship-arrow">→</div>` : ''}
+            <div class="ship-node"><div class="node-dot ${isDelivered ? 'green' : 'gray'}"></div>${to}</div>
+            <span style="margin-left:auto;font-size:10px;color:#a0aec0">${carrierName} ${s.trackingNo.slice(-4)}</span>
+          </div>
+        </div>`;
+    }
+
+    // 时间线预览（最近2条）
+    let tlPreviewHtml = '';
+    if (d.logs && d.logs.length > 0) {
+      const recent = d.logs.slice(-2).reverse();
+      const items = recent.map(log => `
+        <div class="tl-preview-item">
+          <div class="tl-preview-dot"></div>
+          <div class="tl-preview-time">${log.time ? log.time.split(' ')[0] || log.time : ''}</div>
+          <div class="tl-preview-loc">📍 ${log.location || '—'}</div>
+        </div>
+      `).join('');
+      const more = d.logs.length > 2 ? `<div class="tl-preview-more">… 共 ${d.logs.length} 条记录</div>` : '';
+      tlPreviewHtml = `
+        <div class="dc-timeline-preview visible">
+          ${items}
+          ${more}
+        </div>`;
+    }
+
+    // 标签
+    const tags = [];
+    tags.push(`<span class="dc-tag loc">📍 ${d.location || '未知'}</span>`);
+    tags.push(`<span class="dc-tag owner">👤 ${d.owner || '—'}</span>`);
+    if (d.region) tags.push(`<span class="dc-tag">🏢 ${d.region}</span>`);
+    if (d.shipping && d.shipping.trackingNo) tags.push(`<span class="dc-tag shipping">📦 运输中</span>`);
+    if (d.needRepair) tags.push(`<span class="dc-tag repair">🔧 待维修</span>`);
+    if (d.useStatus) tags.push(`<span class="dc-tag">${d.useStatus}</span>`);
+
     return `
-      <div class="device-card ${cls} ${cat.catClass}"
+      <div class="device-card ${catCls}"
         onclick="openDetail('${d.id}')"
         ontouchstart="handleLongPress('${d.id}')" ontouchend="cancelLongPress()">
-        <div class="device-icon">${d.icon}</div>
-        <div class="device-info">
-          <div class="device-name">${d.name}</div>
-          <div class="device-id">${d.id}</div>
-          <div class="device-meta">👤 ${d.owner || '—'} · 📍 ${d.location || '—'}${d.useStatus ? ' · ' + d.useStatus : ''}${d.needRepair ? ' · ⚠️待维修' : ''}${d.shipping && d.shipping.trackingNo ? ' · 📦运输中' : ''}</div>
-          <div class="device-status">
-            <div class="status-dot ${dotCls}"></div>
-            <span class="status-text">${statusText}</span>
+        <div class="dc-top">
+          <div class="dc-icon">${d.icon}</div>
+          <div class="dc-info">
+            <div class="dc-name">${d.name}</div>
+            <div class="dc-id">${d.id}</div>
           </div>
-          <div class="last-check">${lastCheck}</div>
+          ${pill}
         </div>
-        <div class="arrow">›</div>
+        <div class="dc-meta">${tags.join('')}</div>
+        <div class="dc-components">${comps}</div>
+        ${shipTrackHtml}
+        ${tlPreviewHtml}
       </div>`;
   }).join('');
 }
 
 // ============================================================
-// 详情
+// 详情页 - 汇报风格
 // ============================================================
 function openDetail(deviceId) {
   currentDevice = devices.find(d => d.id === deviceId);
@@ -1002,80 +1199,80 @@ function openDetail(deviceId) {
 
   document.getElementById("detail-header").className = `detail-header ${cat.catClass}`;
   document.getElementById("detail-name").textContent = currentDevice.name;
-  document.getElementById("detail-id").textContent = currentDevice.id + " · " + currentCat.toUpperCase().replace("-","-") ;
-  document.getElementById("d-assetno").textContent = currentDevice.id;
-  document.getElementById("d-category").textContent = cat.shortLabel;
-  document.getElementById("d-region").textContent = currentDevice.region || "—";
-  document.getElementById("d-location").textContent = currentDevice.location || "—";
-  document.getElementById("d-owner").textContent = currentDevice.owner || "—";
-  // 状态备注
-  const statusNoteEl = document.getElementById("d-statusnote");
-  statusNoteEl.textContent = currentDevice.statusNote || "点击添加";
-  if (!currentDevice.statusNote) { statusNoteEl.style.color = "#a0aec0"; statusNoteEl.style.fontStyle = "italic"; }
-  else { statusNoteEl.style.color = "#2b6cb0"; statusNoteEl.style.fontStyle = "normal"; }
+  document.getElementById("detail-id").textContent = currentDevice.id + " · " + currentDevice.region;
 
-  // 当前状态
-  const useStatusMap = {"保管地": "🟢 保管地", "调用中": "🟠 调用中", "待维修": "🔴 待维修", "招标": "🔵 招标", "": "⚪ 未设置"};
-  document.getElementById("d-usestatus").textContent = useStatusMap[currentDevice.useStatus] || currentDevice.useStatus || "⚪ 未设置";
-  document.getElementById("d-repair").textContent = currentDevice.needRepair ? "⚠️ 是" : "✅ 否";
-  const presetNoteRow = document.getElementById("d-presetnote-row");
-  if (currentDevice.presetNote) {
-    presetNoteRow.style.display = "flex";
-    document.getElementById("d-presetnote").textContent = currentDevice.presetNote;
-  } else {
-    presetNoteRow.style.display = "none";
-  }
-  // 目前状态 - 器件检查
-  const yn = v => v === "有" ? `<span class="status-badge badge-ok">✅ 有</span>` : v === "无" ? `<span class="status-badge badge-error">❌ 无</span>` : `<span class="status-badge badge-unchecked">⏳ 待检查</span>`;
-  document.getElementById("d-dilator").innerHTML = yn(currentDevice.dilator);
-  document.getElementById("d-heartmodel").innerHTML = yn(currentDevice.heartmodel);
-  document.getElementById("d-guidesheath").innerHTML = yn(currentDevice.guidesheath);
-  document.getElementById("d-clip").innerHTML = yn(currentDevice.clip);
-  // 瓣膜夹功能
-  const clipfuncRow = document.getElementById("d-clipfunc-row");
-  if (currentDevice.clip === "有" && currentDevice.clipfunc && currentDevice.clipfunc.length > 0) {
-    clipfuncRow.style.display = "flex";
-    const labels = currentDevice.clipfunc.map(v => v === "其他" && currentDevice.clipfuncOther ? "其他：" + currentDevice.clipfuncOther : v);
-    document.getElementById("d-clipfunc").textContent = labels.join("、");
-  } else {
-    clipfuncRow.style.display = "none";
-  }
-  document.getElementById("d-checktime").textContent = currentDevice.lastCheck || "从未检查";
+  // 使用状态条
+  const useStatusMap = {
+    "保管地": { dot: "green", text: "🟢 保管地", sub: "设备在保管位置" },
+    "调用中": { dot: "orange", text: "🟠 调用中", sub: "设备已出库使用" },
+    "待维修": { dot: "red", text: "🔴 待维修", sub: "需要维修处理" },
+    "招标": { dot: "blue", text: "🔵 招标中", sub: "招标流程中" },
+    "": { dot: "gray", text: "⚪ 未设置", sub: "" }
+  };
+  const us = useStatusMap[currentDevice.useStatus] || { dot: "gray", text: "⚪ " + (currentDevice.useStatus || "未设置"), sub: "" };
+  const statusNoteHtml = currentDevice.statusNote
+    ? `<span style="font-size:12px;color:#718096;margin-left:8px;cursor:pointer" id="d-statusnote-inline" onclick="editStatusNote()">${currentDevice.statusNote}</span>`
+    : `<span style="font-size:12px;color:#a0aec0;margin-left:8px;cursor:pointer;font-style:italic" id="d-statusnote-inline" onclick="editStatusNote()">点击添加备注</span>`;
+  const repairHtml = currentDevice.needRepair ? `<div class="use-bar"><div class="use-dot red"></div><div class="use-text" style="color:#c53030">⚠️ 需要维修</div><div class="use-sub">${currentDevice.presetNote || ''}</div></div>` : '';
 
-  // 关联单号（从最新一条log取）
-  const refNoRow = document.getElementById("d-refno-row");
+  document.getElementById("d-use-bar-container").innerHTML = `
+    <div class="use-bar">
+      <div class="use-dot ${us.dot}"></div>
+      <div class="use-text">${us.text}</div>
+      <div class="use-sub">${us.sub}${statusNoteHtml}</div>
+    </div>
+    ${repairHtml}
+  `;
+
+  // 地点标注卡
   const latestLog = currentDevice.logs && currentDevice.logs.length > 0 ? currentDevice.logs[currentDevice.logs.length - 1] : null;
+  const lastCheckTime = currentDevice.lastCheck || "从未检查";
+  const refNoDisplay = latestLog && latestLog.refNo ? `<div style="margin-top:4px;font-size:12px">🔗 单号：${latestLog.refNo}</div>` : '';
+  document.getElementById("d-location-card").innerHTML = `
+    <div class="location-card">
+      <div class="loc-pin">📍</div>
+      <div class="loc-info">
+        <div class="loc-name">${currentDevice.location || '未知'}</div>
+        <div class="loc-detail">${currentDevice.region} · ${currentDevice.owner}${refNoDisplay}</div>
+      </div>
+    </div>
+  `;
+
+  // 器件状态仪表盘
+  const yn = v => v === "有" ? "ok" : v === "无" ? "err" : "mute";
+  const ynText = v => v === "有" ? "✅ 正常" : v === "无" ? "❌ 缺失" : "— 待检";
+  let clipfuncText = "";
+  if (currentDevice.clip === "有" && currentDevice.clipfunc && currentDevice.clipfunc.length > 0) {
+    const labels = currentDevice.clipfunc.map(v => v === "其他" && currentDevice.clipfuncOther ? "其他：" + currentDevice.clipfuncOther : v);
+    const hasIssue = !currentDevice.clipfunc.includes("可用");
+    clipfuncText = hasIssue ? `<div class="sd-item" style="grid-column:1/-1"><div class="sd-icon">⚡</div><div class="sd-info"><div class="sd-label">瓣膜夹功能</div><div class="sd-val err">${labels.join("、")}</div></div></div>` : `<div class="sd-item" style="grid-column:1/-1"><div class="sd-icon">⚡</div><div class="sd-info"><div class="sd-label">瓣膜夹功能</div><div class="sd-val ok">✅ ${labels.join("、")}</div></div></div>`;
+  }
+
+  document.getElementById("d-status-dashboard").innerHTML = `
+    <div class="sd-item"><div class="sd-icon">🔧</div><div class="sd-info"><div class="sd-label">扩张鞘</div><div class="sd-val ${yn(currentDevice.dilator)}">${ynText(currentDevice.dilator)}</div></div></div>
+    <div class="sd-item"><div class="sd-icon">❤️</div><div class="sd-info"><div class="sd-label">心脏模型</div><div class="sd-val ${yn(currentDevice.heartmodel)}">${ynText(currentDevice.heartmodel)}</div></div></div>
+    <div class="sd-item"><div class="sd-icon">📏</div><div class="sd-info"><div class="sd-label">导引鞘</div><div class="sd-val ${yn(currentDevice.guidesheath)}">${ynText(currentDevice.guidesheath)}</div></div></div>
+    <div class="sd-item"><div class="sd-icon">📎</div><div class="sd-info"><div class="sd-label">瓣膜夹</div><div class="sd-val ${yn(currentDevice.clip)}">${ynText(currentDevice.clip)}</div></div></div>
+    ${clipfuncText}
+    <div class="sd-item" style="grid-column:1/-1"><div class="sd-icon">🕐</div><div class="sd-info"><div class="sd-label">最近检查</div><div class="sd-val ${currentDevice.lastCheck ? 'ok' : 'mute'}">${lastCheckTime}</div></div></div>
+  `;
+
+  // 关联单号
   if (latestLog && latestLog.refNo) {
-    refNoRow.style.display = "flex";
-    document.getElementById("d-refno").textContent = latestLog.refNo;
-    // 显示关联单号追踪卡片
     document.getElementById("refno-card").style.display = "block";
     document.getElementById("d-refno-card-content").textContent = latestLog.refNo;
     currentRefNo = latestLog.refNo;
   } else {
-    refNoRow.style.display = "none";
     document.getElementById("refno-card").style.display = "none";
     currentRefNo = "";
-  }
-
-  const anomalyRow = document.getElementById("d-anomaly-row");
-  if (currentDevice.anomaly) {
-    anomalyRow.style.display = "flex";
-    document.getElementById("d-anomaly").textContent = currentDevice.anomaly;
-  } else {
-    anomalyRow.style.display = "none";
   }
 
   renderTimeline(currentDevice, cat);
   renderMedia(currentDevice);
   renderShipping(currentDevice);
 
-  // 按钮着色
+  // 按钮
   document.getElementById("btn-check").className = `submit-btn ${cat.catClass}`;
-  document.getElementById("btn-qr").className = `submit-btn ${cat.catClass}`;
-  document.getElementById("btn-qr").style.background = "linear-gradient(135deg,#276749,#38a169)";
-  document.getElementById("btn-qr").style.boxShadow = "0 4px 14px rgba(39,103,73,0.35)";
-
   showPage("page-detail");
 }
 
@@ -1100,27 +1297,22 @@ const CARRIER_TRACK_URLS = {
   huitongkuaidi: "https://www.htky365.com/search/{no}"
 };
 
-// API代理地址（后续部署后替换）
 const TRACKING_API = "https://teer-tracking-api.vercel.app/api/track";
 
 function renderShipping(device) {
   const bindRow = document.getElementById("shipping-bind-row");
   const infoRow = document.getElementById("shipping-info-row");
-  const badge = document.getElementById("d-ship-badge");
   const timeline = document.getElementById("d-ship-timeline");
 
   if (!device.shipping || !device.shipping.trackingNo) {
     bindRow.style.display = "flex";
     infoRow.style.display = "none";
-    badge.className = "shipping-status-badge pending";
-    badge.textContent = "未绑定";
-    timeline.innerHTML = "";
+    timeline.innerHTML = '<div style="text-align:center;color:#a0aec0;font-size:13px;padding:12px 0">暂无快递信息，可绑定单号追踪物流</div>';
     return;
   }
 
   bindRow.style.display = "none";
   infoRow.style.display = "block";
-
   const s = device.shipping;
   document.getElementById("d-ship-carrier").textContent = CARRIER_NAMES[s.carrier] || s.carrier;
   const trackUrl = (CARRIER_TRACK_URLS[s.carrier] || "").replace("{no}", s.trackingNo);
@@ -1128,32 +1320,31 @@ function renderShipping(device) {
     ? `<a href="${trackUrl}" target="_blank" rel="noopener">${s.trackingNo} ↗</a>`
     : s.trackingNo;
 
-  // 状态badge
-  if (s.status === "delivered") {
-    badge.className = "shipping-status-badge delivered";
-    badge.textContent = "已签收";
-  } else if (s.status === "in_transit") {
-    badge.className = "shipping-status-badge in_transit";
-    badge.textContent = "运输中";
-  } else {
-    badge.className = "shipping-status-badge pending";
-    badge.textContent = "已绑定";
-  }
-
-  // 物流时间线
+  // 物流路线图
   if (s.timeline && s.timeline.length > 0) {
-    timeline.innerHTML = s.timeline.map((t, i) => `
-      <div class="ship-tl-item">
-        <div class="ship-tl-dot ${i === 0 ? 'latest' : ''}"></div>
-        <div class="ship-tl-content">
-          <div class="ship-tl-desc">${t.desc || t.status || ""}</div>
-          <div class="ship-tl-loc">${t.location || ""}</div>
-          <div class="ship-tl-time">${t.time || ""}</div>
+    const nodes = s.timeline.map((t, i) => {
+      const dotCls = i === 0 ? 'current' : 'done';
+      const icon = i === 0 ? '📦' : '✓';
+      return `
+        <div class="lr-node">
+          <div class="lr-dot ${dotCls}">${icon}</div>
+          <div class="lr-node-info">
+            <div class="lr-node-loc">${t.location || ''}</div>
+            <div class="lr-node-desc">${t.desc || t.status || ''}</div>
+            <div class="lr-node-time">${t.time || ''}</div>
+          </div>
+        </div>`;
+    }).join('');
+    timeline.innerHTML = `
+      <div class="logistics-route">
+        <div class="lr-header">
+          <div class="lr-title">📦 ${CARRIER_NAMES[s.carrier] || '快递'} ${s.trackingNo}</div>
+          <span class="lr-badge ${s.status === 'delivered' ? 'delivered' : 'transit'}">${s.status === 'delivered' ? '已签收' : '运输中'}</span>
         </div>
-      </div>
-    `).join("");
+        <div class="lr-nodes">${nodes}</div>
+      </div>`;
   } else {
-    timeline.innerHTML = `<div style="text-align:center;color:#a0aec0;font-size:13px;padding:12px 0">点击"更新物流"获取最新状态</div>`;
+    timeline.innerHTML = '<div style="text-align:center;color:#a0aec0;font-size:13px;padding:12px 0">点击"更新物流"获取最新状态</div>';
   }
 }
 
@@ -1162,10 +1353,8 @@ function bindShipping() {
   const trackingNo = document.getElementById("f-ship-no").value.trim();
   if (!carrier) { showToast("请选择快递公司"); return; }
   if (!trackingNo) { showToast("请输入快递单号"); return; }
-
   currentDevice.shipping = {
-    carrier: carrier,
-    trackingNo: trackingNo,
+    carrier, trackingNo,
     status: "in_transit",
     bindTime: new Date().toLocaleString("zh-CN"),
     timeline: []
@@ -1173,13 +1362,11 @@ function bindShipping() {
   saveCurrentDevices();
   renderShipping(currentDevice);
   showToast("快递单号已绑定");
-
-  // 自动查询物流
   refreshTracking();
 }
 
 function unbindShipping() {
-  if (!confirm("确定解绑快递单号？物流记录将清除。")) return;
+  if (!confirm("确定解绑快递单号？")) return;
   delete currentDevice.shipping;
   document.getElementById("f-ship-carrier").value = "";
   document.getElementById("f-ship-no").value = "";
@@ -1191,15 +1378,10 @@ function unbindShipping() {
 async function refreshTracking() {
   if (!currentDevice.shipping) return;
   const s = currentDevice.shipping;
-  const badge = document.getElementById("d-ship-badge");
-  badge.className = "shipping-status-badge in_transit";
-  badge.textContent = "查询中…";
-
   try {
     const resp = await fetch(`${TRACKING_API}?carrier=${encodeURIComponent(s.carrier)}&no=${encodeURIComponent(s.trackingNo)}`);
     if (!resp.ok) throw new Error("API请求失败");
     const data = await resp.json();
-
     if (data.timeline && data.timeline.length > 0) {
       s.timeline = data.timeline;
       s.status = data.status || "in_transit";
@@ -1212,34 +1394,50 @@ async function refreshTracking() {
       showToast("暂无物流信息");
     }
   } catch (e) {
-    // API不可用时，尝试使用快递100网页查询
     console.warn("Tracking API error:", e);
-    badge.className = "shipping-status-badge in_transit";
-    badge.textContent = "运输中";
-    const trackUrl = `https://www.kuaidi100.com/chaxun?nu=${encodeURIComponent(s.trackingNo)}`;
-    showToast("API暂不可用，点击单号到官网查询");
-    s.timeline = s.timeline || [];
     renderShipping(currentDevice);
+    showToast("API暂不可用，点击单号到官网查询");
   }
 }
 
+// ============================================================
+// 时间线 - 增强版
+// ============================================================
 function renderTimeline(device, cat) {
   const container = document.getElementById("d-timeline");
   if (!device.logs || device.logs.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📍</div>暂无位置记录</div>`;
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📅</div>暂无检查记录</div>`;
     return;
   }
   const sorted = [...device.logs].reverse();
-  container.innerHTML = sorted.map(log => `
-    <div class="timeline-item ${cat.catClass}">
-      <div class="tl-dot"></div>
-      <div class="tl-content">
-        <div class="tl-location">📍 ${log.location || "位置未记录"}</div>
-        <div class="tl-time">${log.time}</div>
-        <div class="tl-checker">检查人：${log.checker || "—"}</div>
-        <div class="tl-status">${log.dilator ? `扩张鞘:${log.dilator} · 心脏模型:${log.heartmodel} · 导引鞘:${log.guidesheath} · 瓣膜夹:${log.clip}` : ''}${log.clipfunc && log.clipfunc.length > 0 ? `<br>瓣膜夹功能：${log.clipfunc.join('、')}` : ''}</div>
-      </div>
-    </div>`).join('');
+  container.innerHTML = sorted.map(log => {
+    // 器件标签
+    const compTags = [];
+    if (log.dilator) compTags.push(`<span class="te-comp-tag ${log.dilator === '有' ? 'ok' : 'err'}">扩张鞘:${log.dilator}</span>`);
+    if (log.heartmodel) compTags.push(`<span class="te-comp-tag ${log.heartmodel === '有' ? 'ok' : 'err'}">心脏模型:${log.heartmodel}</span>`);
+    if (log.guidesheath) compTags.push(`<span class="te-comp-tag ${log.guidesheath === '有' ? 'ok' : 'err'}">导引鞘:${log.guidesheath}</span>`);
+    if (log.clip) compTags.push(`<span class="te-comp-tag ${log.clip === '有' ? 'ok' : 'err'}">瓣膜夹:${log.clip}</span>`);
+    if (log.clipfunc && log.clipfunc.length > 0) {
+      const funcLabels = log.clipfunc.map(v => v === "其他" && log.clipfuncOther ? "其他：" + log.clipfuncOther : v);
+      compTags.push(`<span class="te-comp-tag err">${funcLabels.join("、")}</span>`);
+    }
+    const refNoHtml = log.refNo ? `<div class="te-refno">🔗 单号：${log.refNo}</div>` : '';
+    const noteHtml = log.note ? `<div style="font-size:11px;color:#718096;margin-top:4px">📝 ${log.note}</div>` : '';
+
+    return `
+      <div class="te-item">
+        <div class="te-dot">📍</div>
+        <div class="te-content">
+          <div class="te-header">
+            <div class="te-loc">${log.location || "位置未记录"}</div>
+            <div class="te-time">${log.time || ''}</div>
+          </div>
+          <div class="te-checker">检查人：${log.checker || "—"}</div>
+          <div class="te-components">${compTags.join('')}</div>
+          ${refNoHtml}${noteHtml}
+        </div>
+      </div>`;
+  }).join('');
 }
 
 async function renderMedia(device) {
@@ -1248,17 +1446,12 @@ async function renderMedia(device) {
     container.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📷</div>暂无媒体记录</div>`;
     return;
   }
-  // 逐个加载媒体URL
   const items = [];
   for (let i = 0; i < device.media.length; i++) {
     const m = device.media[i];
     let url = null;
-    // 兼容旧数据：如果还有data字段（base64），直接用
-    if (m.data) {
-      url = m.data;
-    } else if (m.blobKey) {
-      url = await getMediaURL(device.id, i);
-    }
+    if (m.data) { url = m.data; }
+    else if (m.blobKey) { url = await getMediaURL(device.id, i); }
     if (!url) { items.push(`<div class="media-thumb"><div style="display:flex;align-items:center;justify-content:center;height:100%;color:#a0aec0;font-size:12px;">加载失败</div></div>`); continue; }
     if (m.type === "video") {
       items.push(`<div class="media-thumb" onclick="viewMedia(${i})"><video src="${url}" muted playsinline></video><div class="video-overlay">▶</div><div class="media-date"><span class="media-time">${m.time || ''}</span>${m.checker ? `<span class="media-checker">${m.checker}</span>` : ''}</div></div>`);
@@ -1311,7 +1504,6 @@ function goToCheckForm() {
   showPage("page-form");
 }
 
-// 检查必填项是否全部填好，更新提交按钮状态
 function updateSubmitBtnState() {
   const checker = document.getElementById("f-checker").value.trim();
   const location = document.getElementById("f-location").value.trim();
@@ -1320,14 +1512,10 @@ function updateSubmitBtnState() {
   const guidesheath = radioSelections["guidesheath"];
   const clip = radioSelections["clip"];
   const clipfunc = radioSelections["clipfunc"] || [];
-
   const allFilled = checker && location && dilator && heartmodel && guidesheath && clip && (clip === "无" || clipfunc.length > 0);
   const btn = document.getElementById("submit-btn");
-  if (allFilled) {
-    btn.classList.remove("disabled");
-  } else {
-    btn.classList.add("disabled");
-  }
+  if (allFilled) btn.classList.remove("disabled");
+  else btn.classList.add("disabled");
 }
 
 function selectRadio(btn) {
@@ -1338,13 +1526,10 @@ function selectRadio(btn) {
   updateSubmitBtnState();
 }
 
-// 瓣膜夹有无 → 显示/隐藏功能检查
 function toggleClipFunc() {
   const hasClip = radioSelections["clip"] === "有";
-  const sec = document.getElementById("clipfunc-section");
-  sec.style.display = hasClip ? "block" : "none";
+  document.getElementById("clipfunc-section").style.display = hasClip ? "block" : "none";
   if (!hasClip) {
-    // 清除瓣膜夹功能选择
     document.querySelectorAll('.radio-btn[data-group="clipfunc"]').forEach(b => b.classList.remove("selected", "ok", "warn", "error"));
     radioSelections["clipfunc"] = [];
     document.getElementById("clipfunc-other-row").style.display = "none";
@@ -1352,28 +1537,18 @@ function toggleClipFunc() {
   updateSubmitBtnState();
 }
 
-// 多选切换（瓣膜夹功能检查）
 const checkSelections = {};
 function toggleCheck(btn) {
   const group = btn.dataset.group;
   if (!checkSelections[group]) checkSelections[group] = [];
   const val = btn.dataset.val;
   const idx = checkSelections[group].indexOf(val);
-  if (idx >= 0) {
-    checkSelections[group].splice(idx, 1);
-    btn.classList.remove("selected", btn.dataset.cls);
-  } else {
-    checkSelections[group].push(val);
-    btn.classList.add("selected", btn.dataset.cls);
-  }
+  if (idx >= 0) { checkSelections[group].splice(idx, 1); btn.classList.remove("selected", btn.dataset.cls); }
+  else { checkSelections[group].push(val); btn.classList.add("selected", btn.dataset.cls); }
   radioSelections[group] = checkSelections[group] || [];
-  // "其他"显示输入框
   const otherRow = document.getElementById("clipfunc-other-row");
-  if (checkSelections[group].includes("其他")) {
-    otherRow.style.display = "block";
-  } else {
-    otherRow.style.display = "none";
-  }
+  if (checkSelections[group].includes("其他")) otherRow.style.display = "block";
+  else otherRow.style.display = "none";
   updateSubmitBtnState();
 }
 
@@ -1400,7 +1575,6 @@ function renderUploadPreview() {
 function removeFile(index) { selectedFiles.splice(index, 1); renderUploadPreview(); }
 
 async function submitCheck() {
-  // 如果按钮处于禁用状态，不允许提交
   const submitBtn = document.getElementById("submit-btn");
   if (submitBtn.classList.contains("disabled")) { showToast("请先填写所有必填项"); return; }
   const checker = document.getElementById("f-checker").value.trim();
@@ -1415,9 +1589,8 @@ async function submitCheck() {
   if (!dilator || !heartmodel || !guidesheath || !clip) { showToast("请完成所有器件检查"); return; }
   if (clip === "有" && clipfunc.length === 0) { showToast("请选择瓣膜夹功能状态"); return; }
 
-  const btn = document.getElementById("submit-btn");
-  btn.disabled = true;
-  btn.innerHTML = `<span class="loading-spinner"></span> 提交中...`;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = `<span class="loading-spinner"></span> 提交中...`;
 
   const now = new Date();
   const timeStr = now.toLocaleString("zh-CN", { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
@@ -1425,7 +1598,6 @@ async function submitCheck() {
   const note = document.getElementById("f-note").value.trim();
   const refNo = document.getElementById("f-refno").value.trim();
 
-  // 构建异常记录
   const anomalyParts = [];
   if (dilator === "无") anomalyParts.push("扩张鞘：无");
   if (heartmodel === "无") anomalyParts.push("心脏模型：无");
@@ -1436,18 +1608,16 @@ async function submitCheck() {
     anomalyParts.push("瓣膜夹功能：" + funcLabels.join("、"));
   }
 
-  // 保存媒体到IndexedDB，localStorage只存引用
   const mediaStartIdx = (currentDevice.media || []).length;
   const mediaRecords = [];
   for (let fi = 0; fi < selectedFiles.length; fi++) {
     const f = selectedFiles[fi];
     const blobIdx = mediaStartIdx + fi;
     const blobKey = mediaBlobId(currentDevice.id, blobIdx);
-    // 将文件转为Blob存入IndexedDB
-    const fileBlob = f.file;
-    await saveMediaBlob(blobKey, fileBlob);
+    await saveMediaBlob(blobKey, f.file);
     mediaRecords.push({ type: f.type, time: timeStr, checker, blobKey });
   }
+
   const logEntry = { time: timeStr, checker, location, refNo, dilator, heartmodel, guidesheath, clip, clipfunc, clipfuncOther, nextCheck: "", note, mediaCount: mediaRecords.length };
 
   currentDevice.location = location;
@@ -1459,7 +1629,6 @@ async function submitCheck() {
   currentDevice.clipfunc = clipfunc;
   currentDevice.clipfuncOther = clipfuncOther;
   currentDevice.lastCheck = timeStr;
-  currentDevice.nextCheck = nextDate;
   currentDevice.anomaly = anomalyParts.join("\n") || "";
   currentDevice.logs = currentDevice.logs || [];
   currentDevice.logs.push(logEntry);
@@ -1468,8 +1637,8 @@ async function submitCheck() {
   saveCurrentDevices();
 
   await new Promise(r => setTimeout(r, 800));
-  btn.disabled = false;
-  btn.innerHTML = "提交检查记录";
+  submitBtn.disabled = false;
+  submitBtn.innerHTML = "提交检查记录";
   document.getElementById("success-sub").textContent = `已记录 ${timeStr} 的检查数据`;
   document.getElementById("success-overlay").classList.add("show");
 }
@@ -1481,7 +1650,6 @@ function afterSubmit() {
 
 function trackRefNo() {
   if (!currentRefNo) { showToast("暂无关联单号"); return; }
-  // 打开快递100搜索该单号（通用查询）
   const url = `https://www.kuaidi100.com/?coname=${encodeURIComponent(currentRefNo)}`;
   window.open(url, "_blank");
 }
@@ -1509,11 +1677,10 @@ function renderRecordsList() {
     return;
   }
   const sorted = [...currentDevice.logs].reverse();
-  const cat = CATEGORIES[currentCat];
   const yn = v => v === "有" ? `<span class="status-badge badge-ok">✅ 有</span>` : v === "无" ? `<span class="status-badge badge-error">❌ 无</span>` : v || "—";
 
   container.innerHTML = sorted.map((log, si) => {
-    const realIdx = currentDevice.logs.length - 1 - si; // 原始索引
+    const realIdx = currentDevice.logs.length - 1 - si;
     const clipfuncStr = (log.clipfunc && log.clipfunc.length > 0)
       ? log.clipfunc.map(v => v === "其他" && log.clipfuncOther ? "其他：" + log.clipfuncOther : v).join("、")
       : "";
@@ -1531,7 +1698,7 @@ function renderRecordsList() {
       </div>
       <div class="record-body">
         <div class="record-field"><span class="record-field-label">📍 位置</span><span class="record-field-value">${log.location || "—"}</span></div>
-        ${log.refNo ? `<div class="record-field"><span class="record-field-label">🔗 关联单号</span><span class="record-field-value" style="color:#2b6cb0;font-weight:600">${log.refNo}</span></div>` : ""}
+        ${log.refNo ? `<div class="record-field"><span class="record-field-label">🔗 关联单号</span><span class="record-field-value" style="color:#6b46c1;font-weight:600">${log.refNo}</span></div>` : ""}
         <div class="record-field"><span class="record-field-label">扩张鞘</span><span class="record-field-value">${yn(log.dilator)}</span></div>
         <div class="record-field"><span class="record-field-label">心脏模型</span><span class="record-field-value">${yn(log.heartmodel)}</span></div>
         <div class="record-field"><span class="record-field-label">导引鞘</span><span class="record-field-value">${yn(log.guidesheath)}</span></div>
@@ -1597,8 +1764,6 @@ function saveEditRecord() {
   log.clipfunc = Array.from(clipfuncEls).map(el => el.value);
   log.clipfuncOther = document.getElementById("edit-clipfuncOther").value.trim();
   log.note = document.getElementById("edit-note").value.trim();
-
-  // 如果编辑的是最新一条记录，更新设备当前状态
   if (editingRecordIndex === currentDevice.logs.length - 1) {
     currentDevice.dilator = log.dilator;
     currentDevice.heartmodel = log.heartmodel;
@@ -1609,7 +1774,6 @@ function saveEditRecord() {
     currentDevice.lastCheck = log.time;
     currentDevice.location = log.location;
   }
-
   saveCurrentDevices();
   closeEditRecordModal();
   renderRecordsList();
@@ -1631,29 +1795,16 @@ function closeDeleteModal(event) {
 function confirmDeleteRecord() {
   if (deletingRecordIndex < 0) return;
   const log = currentDevice.logs[deletingRecordIndex];
-
-  // 删除关联的媒体（IndexedDB中的blob）
   if (log.mediaCount && log.mediaCount > 0) {
-    // 找到这条记录对应的媒体范围
     let mediaOffset = 0;
-    for (let i = 0; i < deletingRecordIndex; i++) {
-      mediaOffset += (currentDevice.logs[i].mediaCount || 0);
-    }
-    // 删除对应的IndexedDB blobs
+    for (let i = 0; i < deletingRecordIndex; i++) mediaOffset += (currentDevice.logs[i].mediaCount || 0);
     for (let mi = 0; mi < log.mediaCount; mi++) {
       const globalMediaIdx = mediaOffset + mi;
-      if (currentDevice.media[globalMediaIdx] && currentDevice.media[globalMediaIdx].blobKey) {
-        deleteMediaBlob(currentDevice.media[globalMediaIdx].blobKey);
-      }
+      if (currentDevice.media[globalMediaIdx] && currentDevice.media[globalMediaIdx].blobKey) deleteMediaBlob(currentDevice.media[globalMediaIdx].blobKey);
     }
-    // 从media数组中移除
     currentDevice.media.splice(mediaOffset, log.mediaCount);
   }
-
-  // 从logs中删除
   currentDevice.logs.splice(deletingRecordIndex, 1);
-
-  // 如果删除的是最新记录，更新设备当前状态为新的最新记录
   if (currentDevice.logs.length > 0) {
     const latestLog = currentDevice.logs[currentDevice.logs.length - 1];
     currentDevice.dilator = latestLog.dilator || "";
@@ -1664,15 +1815,9 @@ function confirmDeleteRecord() {
     currentDevice.clipfuncOther = latestLog.clipfuncOther || "";
     currentDevice.lastCheck = latestLog.time || null;
   } else {
-    currentDevice.dilator = "";
-    currentDevice.heartmodel = "";
-    currentDevice.guidesheath = "";
-    currentDevice.clip = "";
-    currentDevice.clipfunc = [];
-    currentDevice.clipfuncOther = "";
-    currentDevice.lastCheck = null;
+    currentDevice.dilator = ""; currentDevice.heartmodel = ""; currentDevice.guidesheath = "";
+    currentDevice.clip = ""; currentDevice.clipfunc = []; currentDevice.clipfuncOther = ""; currentDevice.lastCheck = null;
   }
-
   saveCurrentDevices();
   closeDeleteModal();
   renderRecordsList();
@@ -1688,23 +1833,17 @@ function showQRModal(deviceOrId) {
   let device = typeof deviceOrId === "object" ? deviceOrId : devices.find(d => d.id === deviceOrId);
   if (!device) return;
   currentQRDevice = device;
-
   document.getElementById("qr-modal-title").textContent = `${device.icon} ${device.name}`;
   const qrContainer = document.getElementById("qrcode-container");
   qrContainer.innerHTML = "";
   document.getElementById("qr-label").textContent = `${device.id} · 扫码查看详情/发起检查`;
-
   const baseUrl = window.location.href.split("?")[0];
   const qrUrl = `${baseUrl}?cat=${currentCat}&device=${device.id}`;
-
   new QRCode(qrContainer, {
-    text: qrUrl,
-    width: 200, height: 200,
-    colorDark: CATEGORIES[currentCat].color,
-    colorLight: "#ffffff",
+    text: qrUrl, width: 200, height: 200,
+    colorDark: CATEGORIES[currentCat].color, colorLight: "#ffffff",
     correctLevel: QRCode.CorrectLevel.M
   });
-
   document.getElementById("qr-modal").classList.add("show");
 }
 
@@ -1724,8 +1863,8 @@ function printQR() {
   win.document.write(`<!DOCTYPE html><html><head><title>二维码 - ${currentQRDevice.name}</title>
     <style>@page{size:60mm 80mm;margin:0}body{font-family:'PingFang SC',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8mm}
     .label{font-size:14px;font-weight:700;text-align:center;margin-bottom:4px}.id{font-size:11px;color:#555;text-align:center;margin-bottom:8px}
-    img{width:48mm;height:48mm;display:block}.scan-hint{font-size:9px;color:#888;text-align:center;margin-top:6px}.model{font-size:10px;color:#666;text-align:center}</style></head>
-    <body><div class="label">${currentQRDevice.icon} ${currentQRDevice.name}</div><div class="id">${currentQRDevice.id}</div><img src="${qrDataUrl}"><div class="model">${currentDevice.model}</div>
+    img{width:48mm;height:48mm;display:block}.scan-hint{font-size:9px;color:#888;text-align:center;margin-top:6px}</style></head>
+    <body><div class="label">${currentQRDevice.icon} ${currentQRDevice.name}</div><div class="id">${currentQRDevice.id}</div><img src="${qrDataUrl}">
     <div class="scan-hint">${cat.shortLabel} · 扫码查看详情/发起检查</div><script>window.onload=function(){window.print();}<\/script></body></html>`);
   win.document.close();
 }
@@ -1762,25 +1901,22 @@ function showToast(msg) {
 function init() {
   const catKey = getCategoryFromURL();
   if (!catKey) {
-    // 没有分类参数 → 显示选择页
     document.getElementById("page-list").innerHTML = `
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;padding:32px;text-align:center">
         <div style="font-size:48px;margin-bottom:16px">🏥</div>
         <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">TEER模拟器资产管理</h2>
         <p style="font-size:14px;color:#718096;margin-bottom:32px">请选择管理分类</p>
-        <a href="?cat=t-teer" style="display:block;width:240px;padding:18px;margin-bottom:16px;background:linear-gradient(135deg,#1e3a5f,#2d6a9f);color:white;border-radius:14px;text-decoration:none;font-size:16px;font-weight:600;box-shadow:0 4px 14px rgba(30,58,95,0.35)">🏥 T-TEER模拟器</a>
-        <a href="?cat=m-teer" style="display:block;width:240px;padding:18px;margin-bottom:16px;background:linear-gradient(135deg,#5f1e3a,#9f2d6a);color:white;border-radius:14px;text-decoration:none;font-size:16px;font-weight:600;box-shadow:0 4px 14px rgba(95,30,58,0.35)">📊 M-TEER模拟器</a>
+        <a href="?cat=t-teer" style="display:block;width:260px;padding:20px;margin-bottom:16px;background:linear-gradient(135deg,#0f2b44,#1e5a8a,#2d6a9f);color:white;border-radius:16px;text-decoration:none;font-size:17px;font-weight:700;box-shadow:0 6px 20px rgba(30,58,95,0.35)">🏥 T-TEER模拟器 <span style="font-size:13px;opacity:0.8">· 临床 2台</span></a>
+        <a href="?cat=m-teer" style="display:block;width:260px;padding:20px;margin-bottom:16px;background:linear-gradient(135deg,#3d0f24,#7a2248,#9f2d6a);color:white;border-radius:16px;text-decoration:none;font-size:17px;font-weight:700;box-shadow:0 6px 20px rgba(95,30,58,0.35)">📊 M-TEER模拟器 <span style="font-size:13px;opacity:0.8">· 市场 14台</span></a>
         <p style="font-size:12px;color:#a0aec0;margin-top:16px">扫描设备二维码可直接进入对应分类</p>
       </div>`;
     document.getElementById("page-list").classList.add("active");
     return;
   }
-
   currentCat = catKey;
   devices = ensureDevices(catKey);
   renderDeviceList();
 
-  // 检查是否直接跳转设备
   const params = new URLSearchParams(window.location.search);
   const deviceId = params.get("device");
   const action = params.get("action");
@@ -1788,14 +1924,10 @@ function init() {
     const dev = devices.find(d => d.id === deviceId);
     if (dev) {
       openDetail(deviceId);
-      // 实物标签码扫码 → 自动打开检查表单
-      if (action === "inspect") {
-        setTimeout(() => goToCheckForm(), 300);
-      }
+      if (action === "inspect") setTimeout(() => goToCheckForm(), 300);
       return;
     }
   }
-
   showPage("page-list");
 }
 
