@@ -349,9 +349,12 @@
       <div class="info-row" id="d-presetnote-row" style="display:none"><span class="info-label">备注</span><span class="info-value" id="d-presetnote" style="color:#9b2c2c;font-size:13px"></span></div>
     </div>
     <div class="info-card">
-      <h3>🔍 最新检查状态</h3>
-      <div class="info-row"><span class="info-label">器件完整</span><span class="info-value" id="d-parts"></span></div>
-      <div class="info-row"><span class="info-label">功能状态</span><span class="info-value" id="d-func"></span></div>
+      <h3>🔍 目前状态</h3>
+      <div class="info-row"><span class="info-label">扩张鞘</span><span class="info-value" id="d-dilator"></span></div>
+      <div class="info-row"><span class="info-label">心脏模型</span><span class="info-value" id="d-heartmodel"></span></div>
+      <div class="info-row"><span class="info-label">导引鞘</span><span class="info-value" id="d-guidesheath"></span></div>
+      <div class="info-row"><span class="info-label">瓣膜夹</span><span class="info-value" id="d-clip"></span></div>
+      <div class="info-row" id="d-clipfunc-row" style="display:none"><span class="info-label">瓣膜夹功能</span><span class="info-value" id="d-clipfunc" style="color:#9b2c2c;font-size:13px"></span></div>
       <div class="info-row"><span class="info-label">检查时间</span><span class="info-value" id="d-checktime"></span></div>
       <div class="info-row"><span class="info-label">下次期限</span><span class="info-value" id="d-nextcheck"></span></div>
       <div class="info-row" id="d-anomaly-row" style="display:none"><span class="info-label">异常记录</span><span class="info-value" id="d-anomaly" style="color:#c53030"></span></div>
@@ -383,26 +386,50 @@
     <div class="form-item"><label>下次期限</label><input type="date" id="f-nextdate"></div>
   </div>
   <div class="form-section">
-    <div class="form-section-title">🔩 内部器件检查</div>
+    <div class="form-section-title">🔩 器件检查</div>
     <div class="form-item">
-      <label>器件状态</label>
+      <label>扩张鞘</label>
       <div class="radio-group">
-        <button class="radio-btn" data-group="parts" data-val="齐全" data-cls="ok" onclick="selectRadio(this)">✅ 齐全</button>
-        <button class="radio-btn" data-group="parts" data-val="缺失" data-cls="error" onclick="selectRadio(this)">❌ 缺失</button>
+        <button class="radio-btn" data-group="dilator" data-val="有" data-cls="ok" onclick="selectRadio(this)">✅ 有</button>
+        <button class="radio-btn" data-group="dilator" data-val="无" data-cls="error" onclick="selectRadio(this)">❌ 无</button>
       </div>
     </div>
-    <div class="form-item"><label>缺失明细</label><textarea id="f-parts-detail" placeholder="如缺失，描述具体器件..."></textarea></div>
+    <div class="form-item">
+      <label>心脏模型</label>
+      <div class="radio-group">
+        <button class="radio-btn" data-group="heartmodel" data-val="有" data-cls="ok" onclick="selectRadio(this)">✅ 有</button>
+        <button class="radio-btn" data-group="heartmodel" data-val="无" data-cls="error" onclick="selectRadio(this)">❌ 无</button>
+      </div>
+    </div>
+    <div class="form-item">
+      <label>导引鞘</label>
+      <div class="radio-group">
+        <button class="radio-btn" data-group="guidesheath" data-val="有" data-cls="ok" onclick="selectRadio(this)">✅ 有</button>
+        <button class="radio-btn" data-group="guidesheath" data-val="无" data-cls="error" onclick="selectRadio(this)">❌ 无</button>
+      </div>
+    </div>
+    <div class="form-item">
+      <label>瓣膜夹</label>
+      <div class="radio-group">
+        <button class="radio-btn" data-group="clip" data-val="有" data-cls="ok" onclick="selectRadio(this);toggleClipFunc()">✅ 有</button>
+        <button class="radio-btn" data-group="clip" data-val="无" data-cls="error" onclick="selectRadio(this);toggleClipFunc()">❌ 无</button>
+      </div>
+    </div>
   </div>
-  <div class="form-section">
-    <div class="form-section-title">⚡ 功能检查</div>
+  <div class="form-section" id="clipfunc-section" style="display:none">
+    <div class="form-section-title">⚡ 瓣膜夹功能检查</div>
     <div class="form-item">
-      <label>功能状态</label>
-      <div class="radio-group">
-        <button class="radio-btn" data-group="func" data-val="正常" data-cls="ok" onclick="selectRadio(this)">✅ 正常</button>
-        <button class="radio-btn" data-group="func" data-val="异常" data-cls="error" onclick="selectRadio(this)">❌ 异常</button>
+      <label>功能状态（可多选）</label>
+      <div class="radio-group" style="flex-wrap:wrap">
+        <button class="radio-btn" data-group="clipfunc" data-val="可用" data-cls="ok" onclick="toggleCheck(this)">✅ 可用</button>
+        <button class="radio-btn" data-group="clipfunc" data-val="夹子打不开" data-cls="error" onclick="toggleCheck(this)">❌ 夹子打不开</button>
+        <button class="radio-btn" data-group="clipfunc" data-val="gripper down失效" data-cls="error" onclick="toggleCheck(this)">❌ gripper down失效</button>
+        <button class="radio-btn" data-group="clipfunc" data-val="打弯失效" data-cls="error" onclick="toggleCheck(this)">❌ 打弯失效</button>
+        <button class="radio-btn" data-group="clipfunc" data-val="配件缺失" data-cls="error" onclick="toggleCheck(this)">❌ 配件缺失</button>
+        <button class="radio-btn" data-group="clipfunc" data-val="其他" data-cls="warn" onclick="toggleCheck(this)">⚠️ 其他</button>
       </div>
     </div>
-    <div class="form-item"><label>异常描述</label><textarea id="f-func-detail" placeholder="如异常，描述具体问题..."></textarea></div>
+    <div class="form-item" id="clipfunc-other-row" style="display:none"><label>其他说明</label><textarea id="f-clipfunc-other" placeholder="请描述其他问题…"></textarea></div>
   </div>
   <div class="form-section">
     <div class="form-section-title">📸 现场媒体上传</div>
@@ -526,8 +553,12 @@ function createDefaultDevices(catKey) {
       needRepair: preset.repair || false,
       presetNote: preset.note || "",
       category: catKey,
-      partsStatus: "unchecked",
-      funcStatus: "unchecked",
+      dilator: "",
+      heartmodel: "",
+      guidesheath: "",
+      clip: "",
+      clipfunc: [],
+      clipfuncOther: "",
       lastCheck: null,
       nextCheck: null,
       anomaly: "",
@@ -636,25 +667,35 @@ function getCategoryFromURL() {
 // ============================================================
 // 状态工具
 // ============================================================
-function getStatusClass(parts, func) {
-  if (parts === "unchecked" && func === "unchecked") return "status-unchecked";
-  if (parts === "缺失" || func === "异常") return "status-error";
-  if (parts === "齐全" && func === "正常") return "status-ok";
+function getStatusClass(dev) {
+  if (!dev.dilator && !dev.heartmodel && !dev.guidesheath && !dev.clip) return "status-unchecked";
+  const missing = [dev.dilator, dev.heartmodel, dev.guidesheath, dev.clip].filter(v => v === "无").length;
+  const hasClipIssue = dev.clip === "有" && dev.clipfunc && dev.clipfunc.length > 0 && !dev.clipfunc.includes("可用");
+  if (missing > 0 || hasClipIssue) return "status-error";
+  const allHave = [dev.dilator, dev.heartmodel, dev.guidesheath, dev.clip].every(v => v === "有");
+  if (allHave) return "status-ok";
   return "status-warn";
 }
 
-function getStatusDotClass(parts, func) {
-  if (parts === "unchecked" && func === "unchecked") return "";
-  if (parts === "缺失" || func === "异常") return "error";
-  if (parts === "齐全" && func === "正常") return "ok";
+function getStatusDotClass(dev) {
+  if (!dev.dilator && !dev.heartmodel && !dev.guidesheath && !dev.clip) return "";
+  const missing = [dev.dilator, dev.heartmodel, dev.guidesheath, dev.clip].filter(v => v === "无").length;
+  const hasClipIssue = dev.clip === "有" && dev.clipfunc && dev.clipfunc.length > 0 && !dev.clipfunc.includes("可用");
+  if (missing > 0 || hasClipIssue) return "error";
+  const allHave = [dev.dilator, dev.heartmodel, dev.guidesheath, dev.clip].every(v => v === "有");
+  if (allHave) return "ok";
   return "warn";
 }
 
-function getStatusText(parts, func) {
-  if (parts === "unchecked" && func === "unchecked") return "尚未检查";
-  const p = parts === "齐全" ? "器件齐全" : parts === "缺失" ? "⚠️器件缺失" : "";
-  const f = func === "正常" ? "功能正常" : func === "异常" ? "⚠️功能异常" : "";
-  return [p, f].filter(Boolean).join(" · ");
+function getStatusText(dev) {
+  if (!dev.dilator && !dev.heartmodel && !dev.guidesheath && !dev.clip) return "尚未检查";
+  const parts = [];
+  if (dev.dilator === "无") parts.push("⚠️扩张鞘缺失");
+  if (dev.heartmodel === "无") parts.push("⚠️心脏模型缺失");
+  if (dev.guidesheath === "无") parts.push("⚠️导引鞘缺失");
+  if (dev.clip === "无") parts.push("⚠️瓣膜夹缺失");
+  if (dev.clip === "有" && dev.clipfunc && dev.clipfunc.length > 0 && !dev.clipfunc.includes("可用")) parts.push("⚠️瓣膜夹功能异常");
+  return parts.length > 0 ? parts.join(" · ") : "✅ 器件齐全功能正常";
 }
 
 function statusBadge(status) {
@@ -680,8 +721,8 @@ function renderDeviceList() {
   document.getElementById("list-subtitle").textContent = `共 ${devices.length} 台 · 点击查看详情`;
 
   // 统计
-  const ok = devices.filter(d => d.partsStatus === "齐全" && d.funcStatus === "正常").length;
-  const err = devices.filter(d => d.partsStatus === "缺失" || d.funcStatus === "异常").length;
+  const ok = devices.filter(d => getStatusClass(d) === "status-ok").length;
+  const err = devices.filter(d => getStatusClass(d) === "status-error").length;
   const unc = devices.length - ok - err;
   document.getElementById("stats-bar").innerHTML = `
     <div class="stat-chip"><div class="stat-num green">${ok}</div><div class="stat-label">正常</div></div>
@@ -692,9 +733,9 @@ function renderDeviceList() {
   // 列表
   const container = document.getElementById("device-list-container");
   container.innerHTML = devices.map(d => {
-    const cls = getStatusClass(d.partsStatus, d.funcStatus);
-    const dotCls = getStatusDotClass(d.partsStatus, d.funcStatus);
-    const statusText = getStatusText(d.partsStatus, d.funcStatus);
+    const cls = getStatusClass(d);
+    const dotCls = getStatusDotClass(d);
+    const statusText = getStatusText(d);
     const lastCheck = d.lastCheck ? `最近检查：${d.lastCheck}` : "尚未检查";
     return `
       <div class="device-card ${cls} ${cat.catClass}"
@@ -749,8 +790,21 @@ function openDetail(deviceId) {
   } else {
     presetNoteRow.style.display = "none";
   }
-  document.getElementById("d-parts").innerHTML = statusBadge(currentDevice.partsStatus);
-  document.getElementById("d-func").innerHTML = statusBadge(currentDevice.funcStatus);
+  // 目前状态 - 器件检查
+  const yn = v => v === "有" ? `<span class="status-badge badge-ok">✅ 有</span>` : v === "无" ? `<span class="status-badge badge-error">❌ 无</span>` : `<span class="status-badge badge-unchecked">⏳ 待检查</span>`;
+  document.getElementById("d-dilator").innerHTML = yn(currentDevice.dilator);
+  document.getElementById("d-heartmodel").innerHTML = yn(currentDevice.heartmodel);
+  document.getElementById("d-guidesheath").innerHTML = yn(currentDevice.guidesheath);
+  document.getElementById("d-clip").innerHTML = yn(currentDevice.clip);
+  // 瓣膜夹功能
+  const clipfuncRow = document.getElementById("d-clipfunc-row");
+  if (currentDevice.clip === "有" && currentDevice.clipfunc && currentDevice.clipfunc.length > 0) {
+    clipfuncRow.style.display = "flex";
+    const labels = currentDevice.clipfunc.map(v => v === "其他" && currentDevice.clipfuncOther ? "其他：" + currentDevice.clipfuncOther : v);
+    document.getElementById("d-clipfunc").textContent = labels.join("、");
+  } else {
+    clipfuncRow.style.display = "none";
+  }
   document.getElementById("d-checktime").textContent = currentDevice.lastCheck || "从未检查";
   document.getElementById("d-nextcheck").textContent = currentDevice.nextCheck || "未设定";
 
@@ -788,7 +842,7 @@ function renderTimeline(device, cat) {
         <div class="tl-location">📍 ${log.location || "位置未记录"}</div>
         <div class="tl-time">${log.time}</div>
         <div class="tl-checker">检查人：${log.checker || "—"}</div>
-        <div class="tl-status">${statusBadge(log.partsStatus)} ${statusBadge(log.funcStatus)}</div>
+        <div class="tl-status">${log.dilator ? `扩张鞘:${log.dilator} · 心脏模型:${log.heartmodel} · 导引鞘:${log.guidesheath} · 瓣膜夹:${log.clip}` : ''}${log.clipfunc && log.clipfunc.length > 0 ? `<br>瓣膜夹功能：${log.clipfunc.join('、')}` : ''}</div>
       </div>
     </div>`).join('');
 }
@@ -825,16 +879,20 @@ function goToCheckForm() {
   document.getElementById("form-device-id").textContent = currentDevice.id;
   document.getElementById("f-checker").value = "";
   document.getElementById("f-location").value = currentDevice.location || "";
-  document.getElementById("f-parts-detail").value = "";
-  document.getElementById("f-func-detail").value = "";
   document.getElementById("f-note").value = "";
   document.getElementById("upload-preview").innerHTML = "";
+  document.getElementById("clipfunc-section").style.display = "none";
+  document.getElementById("clipfunc-other-row").style.display = "none";
   selectedFiles = [];
   const next = new Date(); next.setMonth(next.getMonth() + 3);
   document.getElementById("f-nextdate").value = next.toISOString().split("T")[0];
   document.querySelectorAll(".radio-btn").forEach(b => b.classList.remove("selected", "ok", "warn", "error"));
-  radioSelections["parts"] = null;
-  radioSelections["func"] = null;
+  radioSelections["dilator"] = null;
+  radioSelections["heartmodel"] = null;
+  radioSelections["guidesheath"] = null;
+  radioSelections["clip"] = null;
+  radioSelections["clipfunc"] = [];
+  checkSelections["clipfunc"] = [];
   document.getElementById("submit-btn").className = `submit-btn ${cat.catClass}`;
   showPage("page-form");
 }
@@ -844,6 +902,43 @@ function selectRadio(btn) {
   radioSelections[group] = btn.dataset.val;
   document.querySelectorAll(`.radio-btn[data-group="${group}"]`).forEach(b => b.classList.remove("selected", "ok", "warn", "error"));
   btn.classList.add("selected", btn.dataset.cls);
+}
+
+// 瓣膜夹有无 → 显示/隐藏功能检查
+function toggleClipFunc() {
+  const hasClip = radioSelections["clip"] === "有";
+  const sec = document.getElementById("clipfunc-section");
+  sec.style.display = hasClip ? "block" : "none";
+  if (!hasClip) {
+    // 清除瓣膜夹功能选择
+    document.querySelectorAll('.radio-btn[data-group="clipfunc"]').forEach(b => b.classList.remove("selected", "ok", "warn", "error"));
+    radioSelections["clipfunc"] = [];
+    document.getElementById("clipfunc-other-row").style.display = "none";
+  }
+}
+
+// 多选切换（瓣膜夹功能检查）
+const checkSelections = {};
+function toggleCheck(btn) {
+  const group = btn.dataset.group;
+  if (!checkSelections[group]) checkSelections[group] = [];
+  const val = btn.dataset.val;
+  const idx = checkSelections[group].indexOf(val);
+  if (idx >= 0) {
+    checkSelections[group].splice(idx, 1);
+    btn.classList.remove("selected", btn.dataset.cls);
+  } else {
+    checkSelections[group].push(val);
+    btn.classList.add("selected", btn.dataset.cls);
+  }
+  radioSelections[group] = checkSelections[group] || [];
+  // "其他"显示输入框
+  const otherRow = document.getElementById("clipfunc-other-row");
+  if (checkSelections[group].includes("其他")) {
+    otherRow.style.display = "block";
+  } else {
+    otherRow.style.display = "none";
+  }
 }
 
 function handleFileSelect(event) {
@@ -870,12 +965,15 @@ function removeFile(index) { selectedFiles.splice(index, 1); renderUploadPreview
 async function submitCheck() {
   const checker = document.getElementById("f-checker").value.trim();
   const location = document.getElementById("f-location").value.trim();
-  const partsStatus = radioSelections["parts"];
-  const funcStatus = radioSelections["func"];
+  const dilator = radioSelections["dilator"];
+  const heartmodel = radioSelections["heartmodel"];
+  const guidesheath = radioSelections["guidesheath"];
+  const clip = radioSelections["clip"];
+  const clipfunc = radioSelections["clipfunc"] || [];
   if (!checker) { showToast("请填写检查人姓名"); return; }
   if (!location) { showToast("请填写当前位置"); return; }
-  if (!partsStatus) { showToast("请选择器件检查结果"); return; }
-  if (!funcStatus) { showToast("请选择功能检查结果"); return; }
+  if (!dilator || !heartmodel || !guidesheath || !clip) { showToast("请完成所有器件检查"); return; }
+  if (clip === "有" && clipfunc.length === 0) { showToast("请选择瓣膜夹功能状态"); return; }
 
   const btn = document.getElementById("submit-btn");
   btn.disabled = true;
@@ -884,21 +982,31 @@ async function submitCheck() {
   const now = new Date();
   const timeStr = now.toLocaleString("zh-CN", { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
   const nextDate = document.getElementById("f-nextdate").value;
-  const partsDetail = document.getElementById("f-parts-detail").value.trim();
-  const funcDetail = document.getElementById("f-func-detail").value.trim();
+  const clipfuncOther = document.getElementById("f-clipfunc-other") ? document.getElementById("f-clipfunc-other").value.trim() : "";
   const note = document.getElementById("f-note").value.trim();
 
+  // 构建异常记录
   const anomalyParts = [];
-  if (partsStatus === "缺失" && partsDetail) anomalyParts.push("器件缺失：" + partsDetail);
-  if (funcStatus === "异常" && funcDetail) anomalyParts.push("功能异常：" + funcDetail);
+  if (dilator === "无") anomalyParts.push("扩张鞘：无");
+  if (heartmodel === "无") anomalyParts.push("心脏模型：无");
+  if (guidesheath === "无") anomalyParts.push("导引鞘：无");
+  if (clip === "无") anomalyParts.push("瓣膜夹：无");
+  if (clip === "有" && clipfunc.length > 0) {
+    const funcLabels = clipfunc.map(v => v === "其他" && clipfuncOther ? "其他：" + clipfuncOther : v);
+    anomalyParts.push("瓣膜夹功能：" + funcLabels.join("、"));
+  }
 
   const mediaRecords = selectedFiles.map(f => ({ type: f.type, data: f.data, time: timeStr, checker }));
-  const logEntry = { time: timeStr, checker, location, partsStatus, partsDetail, funcStatus, funcDetail, nextCheck: nextDate, note, mediaCount: mediaRecords.length };
+  const logEntry = { time: timeStr, checker, location, dilator, heartmodel, guidesheath, clip, clipfunc, clipfuncOther, nextCheck: nextDate, note, mediaCount: mediaRecords.length };
 
   currentDevice.location = location;
   currentDevice.owner = currentDevice.owner || checker;
-  currentDevice.partsStatus = partsStatus;
-  currentDevice.funcStatus = funcStatus;
+  currentDevice.dilator = dilator;
+  currentDevice.heartmodel = heartmodel;
+  currentDevice.guidesheath = guidesheath;
+  currentDevice.clip = clip;
+  currentDevice.clipfunc = clipfunc;
+  currentDevice.clipfuncOther = clipfuncOther;
   currentDevice.lastCheck = timeStr;
   currentDevice.nextCheck = nextDate;
   currentDevice.anomaly = anomalyParts.join("\n") || "";
