@@ -1118,7 +1118,7 @@ const LOCATION_TO_REGION = {
   "河南": "华中区", "郑州": "华中区",
   "安徽": "华中区", "合肥": "华中区",
   "湖北": "华中区", "武汉": "华中区",
-  "江西": "华中区", "南昌": "华中区",
+  "江西": "华中区", "南昌": "华中区", "赣州": "华南区",
   // 华北区
   "北京": "华北区", "北京市": "华北区", "天津": "华北区", "河北": "华北区", "石家庄": "华北区",
   "山西": "华北区", "太原": "华北区",
@@ -1408,14 +1408,17 @@ function renderDeviceList() {
   document.getElementById("list-title").textContent = `${cat.icon} ${cat.label}`;
   document.getElementById("list-badge").textContent = `${devices.length} 台`;
 
-  // 按地区分组（优先使用设备的region字段，其次按location推算）
+  // 按地区分组（动态：以最新位置为准，位置无法推算时用预设region兜底）
   const groups = {};
   const regionKeys = Object.keys(REGION_CONFIG);
   regionKeys.forEach(rk => { groups[rk] = []; });
 
   devices.forEach(d => {
-    const regionKey = d.region || getRegionFromLocation(d.location) || "未分配";
+    // 优先从当前最新location动态推算大区，其次使用预设归属
+    const locRegion = getRegionFromLocation(d.location);
+    const regionKey = locRegion || d.region || "未分配";
     if (!groups[regionKey]) groups[regionKey] = [];
+    d._dynamicRegion = locRegion; // 记录动态区域用于跨区判断
     groups[regionKey].push(d);
   });
 
