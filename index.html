@@ -238,12 +238,16 @@
     margin: 12px; padding: 16px;
     color: white; border: none; border-radius: 12px;
     font-size: 16px; font-weight: 600; cursor: pointer;
-    font-family: inherit; transition: transform 0.15s;
+    font-family: inherit; transition: all 0.25s;
   }
   .submit-btn:active { transform: scale(0.98); }
+  .submit-btn.disabled {
+    background: #cbd5e0 !important; color: #a0aec0 !important;
+    box-shadow: none !important; cursor: not-allowed;
+  }
   .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-  .cat-t-teer .submit-btn { background: linear-gradient(135deg, #1e3a5f, #2d6a9f); box-shadow: 0 4px 14px rgba(30,58,95,0.35); }
-  .cat-m-teer .submit-btn { background: linear-gradient(135deg, #5f1e3a, #9f2d6a); box-shadow: 0 4px 14px rgba(95,30,58,0.35); }
+  .cat-t-teer .submit-btn:not(.disabled) { background: linear-gradient(135deg, #1e3a5f, #2d6a9f); box-shadow: 0 4px 14px rgba(30,58,95,0.35); }
+  .cat-m-teer .submit-btn:not(.disabled) { background: linear-gradient(135deg, #5f1e3a, #9f2d6a); box-shadow: 0 4px 14px rgba(95,30,58,0.35); }
 
   /* 成功弹层 */
   .success-overlay {
@@ -452,8 +456,8 @@
   </div>
   <div class="form-section">
     <div class="form-section-title">📋 基本信息</div>
-    <div class="form-item"><label>检查人</label><input type="text" id="f-checker" placeholder="请输入姓名"></div>
-    <div class="form-item"><label>当前位置</label><input type="text" id="f-location" placeholder="如：手术室A / 展区B"></div>
+    <div class="form-item"><label>检查人</label><input type="text" id="f-checker" placeholder="请输入姓名" oninput="updateSubmitBtnState()"></div>
+    <div class="form-item"><label>当前位置</label><input type="text" id="f-location" placeholder="如：手术室A / 展区B" oninput="updateSubmitBtnState()"></div>
   </div>
   <div class="form-section">
     <div class="form-section-title">🔩 器件检查</div>
@@ -1205,8 +1209,28 @@ function goToCheckForm() {
   radioSelections["clip"] = null;
   radioSelections["clipfunc"] = [];
   checkSelections["clipfunc"] = [];
-  document.getElementById("submit-btn").className = `submit-btn ${cat.catClass}`;
+  document.getElementById("submit-btn").className = `submit-btn ${cat.catClass} disabled`;
+  updateSubmitBtnState();
   showPage("page-form");
+}
+
+// 检查必填项是否全部填好，更新提交按钮状态
+function updateSubmitBtnState() {
+  const checker = document.getElementById("f-checker").value.trim();
+  const location = document.getElementById("f-location").value.trim();
+  const dilator = radioSelections["dilator"];
+  const heartmodel = radioSelections["heartmodel"];
+  const guidesheath = radioSelections["guidesheath"];
+  const clip = radioSelections["clip"];
+  const clipfunc = radioSelections["clipfunc"] || [];
+
+  const allFilled = checker && location && dilator && heartmodel && guidesheath && clip && (clip === "无" || clipfunc.length > 0);
+  const btn = document.getElementById("submit-btn");
+  if (allFilled) {
+    btn.classList.remove("disabled");
+  } else {
+    btn.classList.add("disabled");
+  }
 }
 
 function selectRadio(btn) {
@@ -1214,6 +1238,7 @@ function selectRadio(btn) {
   radioSelections[group] = btn.dataset.val;
   document.querySelectorAll(`.radio-btn[data-group="${group}"]`).forEach(b => b.classList.remove("selected", "ok", "warn", "error"));
   btn.classList.add("selected", btn.dataset.cls);
+  updateSubmitBtnState();
 }
 
 // 瓣膜夹有无 → 显示/隐藏功能检查
@@ -1227,6 +1252,7 @@ function toggleClipFunc() {
     radioSelections["clipfunc"] = [];
     document.getElementById("clipfunc-other-row").style.display = "none";
   }
+  updateSubmitBtnState();
 }
 
 // 多选切换（瓣膜夹功能检查）
@@ -1251,6 +1277,7 @@ function toggleCheck(btn) {
   } else {
     otherRow.style.display = "none";
   }
+  updateSubmitBtnState();
 }
 
 function handleFileSelect(event) {
@@ -1276,6 +1303,9 @@ function renderUploadPreview() {
 function removeFile(index) { selectedFiles.splice(index, 1); renderUploadPreview(); }
 
 async function submitCheck() {
+  // 如果按钮处于禁用状态，不允许提交
+  const submitBtn = document.getElementById("submit-btn");
+  if (submitBtn.classList.contains("disabled")) { showToast("请先填写所有必填项"); return; }
   const checker = document.getElementById("f-checker").value.trim();
   const location = document.getElementById("f-location").value.trim();
   const dilator = radioSelections["dilator"];
