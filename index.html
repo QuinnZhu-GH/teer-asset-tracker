@@ -311,6 +311,44 @@
     vertical-align: middle; margin-right: 8px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* 快递追踪 */
+  .shipping-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+  .shipping-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .shipping-header h3 { font-size: 13px; color: #718096; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
+  .shipping-status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .shipping-status-badge.in_transit { background: #ebf8ff; color: #2b6cb0; }
+  .shipping-status-badge.delivered { background: #f0fff4; color: #276749; }
+  .shipping-status-badge.pending { background: #fffaf0; color: #c05621; }
+  .shipping-input-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+  .shipping-input-row select, .shipping-input-row input {
+    border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; font-size: 13px; outline: none; font-family: inherit;
+  }
+  .shipping-input-row select { width: 110px; flex-shrink: 0; background: white; }
+  .shipping-input-row input { flex: 1; min-width: 0; }
+  .shipping-btn {
+    padding: 8px 16px; border-radius: 8px; border: none; font-size: 13px; cursor: pointer; font-weight: 600; font-family: inherit;
+    transition: all 0.15s;
+  }
+  .shipping-btn:active { transform: scale(0.96); }
+  .shipping-btn.bind { background: #2b6cb0; color: white; }
+  .shipping-btn.unbind { background: #fff5f5; color: #c53030; margin-left: 8px; }
+  .shipping-btn.refresh { background: #ebf8ff; color: #2b6cb0; margin-left: 8px; }
+  .shipping-info { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .shipping-carrier { font-size: 13px; color: #2d3748; font-weight: 600; background: #edf2f7; padding: 3px 8px; border-radius: 4px; }
+  .shipping-no { font-size: 13px; color: #4a5568; font-family: 'SF Mono', 'Consolas', monospace; }
+  .shipping-no a { color: #2b6cb0; text-decoration: none; }
+  .shipping-no a:hover { text-decoration: underline; }
+  .ship-timeline { margin-top: 12px; }
+  .ship-tl-item { display: flex; gap: 10px; padding: 8px 0; position: relative; }
+  .ship-tl-item::before { content: ''; position: absolute; left: 7px; top: 22px; bottom: -8px; width: 2px; background: #e2e8f0; }
+  .ship-tl-item:last-child::before { display: none; }
+  .ship-tl-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #cbd5e0; flex-shrink: 0; margin-top: 2px; background: white; }
+  .ship-tl-dot.latest { background: #2b6cb0; border-color: #90cdf4; }
+  .ship-tl-content { flex: 1; }
+  .ship-tl-desc { font-size: 13px; color: #1a202c; }
+  .ship-tl-loc { font-size: 12px; color: #718096; margin-top: 2px; }
+  .ship-tl-time { font-size: 11px; color: #a0aec0; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -362,6 +400,38 @@
     <div class="info-card">
       <h3>📍 位置追踪历史</h3>
       <div class="timeline" id="d-timeline"></div>
+    </div>
+    <div class="shipping-card" id="shipping-card">
+      <div class="shipping-header">
+        <h3>📦 快递追踪</h3>
+        <span class="shipping-status-badge pending" id="d-ship-badge">未绑定</span>
+      </div>
+      <div id="shipping-bind-row" class="shipping-input-row">
+        <select id="f-ship-carrier">
+          <option value="">选择快递</option>
+          <option value="shunfeng">顺丰速运</option>
+          <option value="zhongtong">中通快递</option>
+          <option value="yunda">韵达快递</option>
+          <option value="yuantong">圆通速递</option>
+          <option value="shentong">申通快递</option>
+          <option value="jingdong">京东物流</option>
+          <option value="ems">EMS</option>
+          <option value="debang">德邦快递</option>
+          <option value="tiantian">天天快递</option>
+          <option value="huitongkuaidi">百世快递</option>
+        </select>
+        <input type="text" id="f-ship-no" placeholder="输入快递单号">
+        <button class="shipping-btn bind" onclick="bindShipping()">绑定</button>
+      </div>
+      <div id="shipping-info-row" style="display:none">
+        <div class="shipping-info">
+          <span class="shipping-carrier" id="d-ship-carrier"></span>
+          <span class="shipping-no" id="d-ship-no"></span>
+          <button class="shipping-btn refresh" onclick="refreshTracking()">🔄 更新物流</button>
+          <button class="shipping-btn unbind" onclick="unbindShipping()">✕ 解绑</button>
+        </div>
+      </div>
+      <div class="ship-timeline" id="d-ship-timeline"></div>
     </div>
     <div class="info-card">
       <h3>📸 现场媒体记录</h3>
@@ -745,7 +815,7 @@ function renderDeviceList() {
         <div class="device-info">
           <div class="device-name">${d.name}</div>
           <div class="device-id">${d.id}</div>
-          <div class="device-meta">👤 ${d.owner || '—'} · 📍 ${d.location || '—'}${d.useStatus ? ' · ' + d.useStatus : ''}${d.needRepair ? ' · ⚠️待维修' : ''}</div>
+          <div class="device-meta">👤 ${d.owner || '—'} · 📍 ${d.location || '—'}${d.useStatus ? ' · ' + d.useStatus : ''}${d.needRepair ? ' · ⚠️待维修' : ''}${d.shipping && d.shipping.trackingNo ? ' · 📦运输中' : ''}</div>
           <div class="device-status">
             <div class="status-dot ${dotCls}"></div>
             <span class="status-text">${statusText}</span>
@@ -818,6 +888,7 @@ function openDetail(deviceId) {
 
   renderTimeline(currentDevice, cat);
   renderMedia(currentDevice);
+  renderShipping(currentDevice);
 
   // 按钮着色
   document.getElementById("btn-check").className = `submit-btn ${cat.catClass}`;
@@ -826,6 +897,150 @@ function openDetail(deviceId) {
   document.getElementById("btn-qr").style.boxShadow = "0 4px 14px rgba(39,103,73,0.35)";
 
   showPage("page-detail");
+}
+
+// ============================================================
+// 快递追踪
+// ============================================================
+const CARRIER_NAMES = {
+  shunfeng: "顺丰速运", zhongtong: "中通快递", yunda: "韵达快递",
+  yuantong: "圆通速递", shentong: "申通快递", jingdong: "京东物流",
+  ems: "EMS", debang: "德邦快递", tiantian: "天天快递", huitongkuaidi: "百世快递"
+};
+const CARRIER_TRACK_URLS = {
+  shunfeng: "https://www.sf-express.com/sf-service-owf-web/service/rate/onewayDomestic/search?keyword={no}",
+  zhongtong: "https://www.zto.com/search?billCode={no}",
+  yunda: "https://www.yundaex.com/cxbill.php?fkcod={no}",
+  yuantong: "https://www.yto.net.cn/html/search/{no}",
+  shentong: "https://www.sto.cn/search?billCode={no}",
+  jingdong: "https://www.jd.com/logistics/{no}",
+  ems: "https://www.ems.com.cn/query/{no}",
+  debang: "https://www.deppon.com/query/{no}",
+  tiantian: "https://www.ttkdex.com/search/{no}",
+  huitongkuaidi: "https://www.htky365.com/search/{no}"
+};
+
+// API代理地址（后续部署后替换）
+const TRACKING_API = "https://teer-tracking-api.vercel.app/api/track";
+
+function renderShipping(device) {
+  const bindRow = document.getElementById("shipping-bind-row");
+  const infoRow = document.getElementById("shipping-info-row");
+  const badge = document.getElementById("d-ship-badge");
+  const timeline = document.getElementById("d-ship-timeline");
+
+  if (!device.shipping || !device.shipping.trackingNo) {
+    bindRow.style.display = "flex";
+    infoRow.style.display = "none";
+    badge.className = "shipping-status-badge pending";
+    badge.textContent = "未绑定";
+    timeline.innerHTML = "";
+    return;
+  }
+
+  bindRow.style.display = "none";
+  infoRow.style.display = "block";
+
+  const s = device.shipping;
+  document.getElementById("d-ship-carrier").textContent = CARRIER_NAMES[s.carrier] || s.carrier;
+  const trackUrl = (CARRIER_TRACK_URLS[s.carrier] || "").replace("{no}", s.trackingNo);
+  document.getElementById("d-ship-no").innerHTML = trackUrl
+    ? `<a href="${trackUrl}" target="_blank" rel="noopener">${s.trackingNo} ↗</a>`
+    : s.trackingNo;
+
+  // 状态badge
+  if (s.status === "delivered") {
+    badge.className = "shipping-status-badge delivered";
+    badge.textContent = "已签收";
+  } else if (s.status === "in_transit") {
+    badge.className = "shipping-status-badge in_transit";
+    badge.textContent = "运输中";
+  } else {
+    badge.className = "shipping-status-badge pending";
+    badge.textContent = "已绑定";
+  }
+
+  // 物流时间线
+  if (s.timeline && s.timeline.length > 0) {
+    timeline.innerHTML = s.timeline.map((t, i) => `
+      <div class="ship-tl-item">
+        <div class="ship-tl-dot ${i === 0 ? 'latest' : ''}"></div>
+        <div class="ship-tl-content">
+          <div class="ship-tl-desc">${t.desc || t.status || ""}</div>
+          <div class="ship-tl-loc">${t.location || ""}</div>
+          <div class="ship-tl-time">${t.time || ""}</div>
+        </div>
+      </div>
+    `).join("");
+  } else {
+    timeline.innerHTML = `<div style="text-align:center;color:#a0aec0;font-size:13px;padding:12px 0">点击"更新物流"获取最新状态</div>`;
+  }
+}
+
+function bindShipping() {
+  const carrier = document.getElementById("f-ship-carrier").value;
+  const trackingNo = document.getElementById("f-ship-no").value.trim();
+  if (!carrier) { showToast("请选择快递公司"); return; }
+  if (!trackingNo) { showToast("请输入快递单号"); return; }
+
+  currentDevice.shipping = {
+    carrier: carrier,
+    trackingNo: trackingNo,
+    status: "in_transit",
+    bindTime: new Date().toLocaleString("zh-CN"),
+    timeline: []
+  };
+  saveCurrentDevices();
+  renderShipping(currentDevice);
+  showToast("快递单号已绑定");
+
+  // 自动查询物流
+  refreshTracking();
+}
+
+function unbindShipping() {
+  if (!confirm("确定解绑快递单号？物流记录将清除。")) return;
+  delete currentDevice.shipping;
+  document.getElementById("f-ship-carrier").value = "";
+  document.getElementById("f-ship-no").value = "";
+  saveCurrentDevices();
+  renderShipping(currentDevice);
+  showToast("已解绑");
+}
+
+async function refreshTracking() {
+  if (!currentDevice.shipping) return;
+  const s = currentDevice.shipping;
+  const badge = document.getElementById("d-ship-badge");
+  badge.className = "shipping-status-badge in_transit";
+  badge.textContent = "查询中…";
+
+  try {
+    const resp = await fetch(`${TRACKING_API}?carrier=${encodeURIComponent(s.carrier)}&no=${encodeURIComponent(s.trackingNo)}`);
+    if (!resp.ok) throw new Error("API请求失败");
+    const data = await resp.json();
+
+    if (data.timeline && data.timeline.length > 0) {
+      s.timeline = data.timeline;
+      s.status = data.status || "in_transit";
+      s.lastUpdate = new Date().toLocaleString("zh-CN");
+      saveCurrentDevices();
+      renderShipping(currentDevice);
+      showToast("物流已更新");
+    } else {
+      renderShipping(currentDevice);
+      showToast("暂无物流信息");
+    }
+  } catch (e) {
+    // API不可用时，尝试使用快递100网页查询
+    console.warn("Tracking API error:", e);
+    badge.className = "shipping-status-badge in_transit";
+    badge.textContent = "运输中";
+    const trackUrl = `https://www.kuaidi100.com/chaxun?nu=${encodeURIComponent(s.trackingNo)}`;
+    showToast("API暂不可用，点击单号到官网查询");
+    s.timeline = s.timeline || [];
+    renderShipping(currentDevice);
+  }
 }
 
 function renderTimeline(device, cat) {
