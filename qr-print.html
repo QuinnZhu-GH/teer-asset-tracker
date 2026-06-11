@@ -43,20 +43,46 @@
   .url-input-wrap input:focus { border-color: #2d6a9f; }
   .url-note { font-size: 12px; color: #a0aec0; margin-top: 6px; }
 
+  /* 两种码的区分 */
+  .qr-type-section {
+    background: white; border-radius: 16px; padding: 24px 20px;
+    margin-bottom: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .qr-type-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 2px dashed #e2e8f0;
+  }
+  .qr-type-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+  }
+  .qr-type-icon.asset { background: linear-gradient(135deg, #ebf8ff, #bee3f8); }
+  .qr-type-icon.monitor { background: linear-gradient(135deg, #f0fff4, #c6f6d5); }
+  .qr-type-title { font-size: 16px; font-weight: 700; color: #1a202c; }
+  .qr-type-desc { font-size: 12px; color: #718096; margin-top: 2px; line-height: 1.5; }
+  .qr-type-tag {
+    display: inline-block; font-size: 10px; padding: 2px 10px;
+    border-radius: 10px; font-weight: 600; margin-top: 4px;
+  }
+  .qr-type-tag.asset { background: #ebf8ff; color: #1e3a5f; }
+  .qr-type-tag.monitor { background: #f0fff4; color: #276749; }
+
   .section-divider {
     display: flex; align-items: center; gap: 16px;
-    margin: 32px 0 16px; padding: 0 4px;
+    margin: 24px 0 12px; padding: 0 4px;
   }
-  .section-divider h2 { font-size: 16px; white-space: nowrap; }
-  .section-divider.t-teer h2 { color: #1e3a5f; }
-  .section-divider.m-teer h2 { color: #5f1e3a; }
+  .section-divider h3 { font-size: 14px; white-space: nowrap; }
+  .section-divider.t-teer h3 { color: #1e3a5f; }
+  .section-divider.m-teer h3 { color: #5f1e3a; }
   .section-divider::after {
     content: ''; flex: 1; height: 1px;
     background: linear-gradient(to right, #e2e8f0, transparent);
   }
   .section-count {
-    font-size: 12px; color: #718096;
-    background: #f7fafc; padding: 3px 10px; border-radius: 12px;
+    font-size: 11px; color: #718096;
+    background: #f7fafc; padding: 2px 8px; border-radius: 10px;
     white-space: nowrap;
   }
 
@@ -86,12 +112,34 @@
   .qr-hint { font-size: 10px; color: #a0aec0; line-height: 1.4; }
   .qr-separator { border-top: 1px dashed #e2e8f0; margin: 8px 0; }
 
+  /* 线上监测码 - 大卡片 */
+  .monitor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .monitor-card {
+    background: white; border-radius: 14px;
+    padding: 20px 18px; text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    border: 2px solid #e2e8f0;
+  }
+  .monitor-card.t-teer { border-color: #1e3a5f; }
+  .monitor-card.m-teer { border-color: #5f1e3a; }
+  .monitor-card .qr-device-icon { font-size: 28px; }
+  .monitor-card .qr-device-name { font-size: 16px; }
+  .monitor-card .qr-cat-label { font-size: 11px; }
+  .monitor-card .qr-hint { font-size: 11px; }
+
   @media print {
     body { background: white; padding: 0; }
     .print-controls, .url-input-wrap { display: none; }
-    .section-divider { margin: 16px 0 10px; }
+    .qr-type-section { box-shadow: none; border: 1px solid #e2e8f0; break-inside: avoid; }
+    .section-divider { margin: 14px 0 8px; }
     .qr-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .monitor-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .qr-card { break-inside: avoid; page-break-inside: avoid; padding: 10px 8px; }
+    .monitor-card { break-inside: avoid; page-break-inside: avoid; }
   }
 </style>
 </head>
@@ -100,35 +148,59 @@
 <div class="print-controls">
   <div>
     <h1>🔲 TEER模拟器二维码打印册</h1>
-    <p>打印后贴在对应设备上，扫码即可查看状态 · 上传图片视频</p>
+    <p>实物标签码贴在设备上 · 线上监测码用于远程管理</p>
   </div>
   <div class="btn-group">
     <button class="btn btn-secondary" onclick="generateAll()">🔄 刷新二维码</button>
-    <button class="btn btn-tteer" onclick="printCategory('t-teer')">🖨️ 仅打印 T-TEER</button>
-    <button class="btn btn-mteer" onclick="printCategory('m-teer')">🖨️ 仅打印 M-TEER</button>
     <button class="btn btn-primary" onclick="window.print()">🖨️ 打印全部</button>
   </div>
 </div>
 
 <div class="url-input-wrap">
-  <label>📡 H5系统访问地址（部署后自动填入，无需修改）</label>
+  <label>📡 H5系统访问地址</label>
   <input type="url" id="base-url" placeholder="例如：https://your-name.github.io/teer-asset-tracker/" value="https://quinnzhu-gh.github.io/teer-asset-tracker/index.html">
-  <div class="url-note">⚠️ 提示：将 index.html 部署到 GitHub Pages 后，在此填入URL并点击"刷新二维码"。<br>二维码中会嵌入 ?cat=t-teer&device=T-TEER-001 等参数，扫码直跳对应设备。</div>
+  <div class="url-note">二维码中嵌入URL参数，扫码后自动跳转对应页面</div>
 </div>
 
-<!-- T-TEER 区 -->
-<div class="section-divider t-teer" id="section-t-teer">
-  <h2>🏥 T-TEER模拟器</h2>
-  <span class="section-count" id="t-teer-count">2 台</span>
-</div>
-<div class="qr-grid" id="grid-t-teer"></div>
+<!-- ========== 第一部分：实物标签码 ========== -->
+<div class="qr-type-section" id="section-asset">
+  <div class="qr-type-header">
+    <div class="qr-type-icon asset">🏷️</div>
+    <div>
+      <div class="qr-type-title">实物标签码</div>
+      <div class="qr-type-desc">贴在模拟器机身上 · 接触设备时扫码 · 直达检查表单</div>
+      <span class="qr-type-tag asset">每台设备一个 · 仅贴在实物上</span>
+    </div>
+  </div>
 
-<!-- M-TEER 区 -->
-<div class="section-divider m-teer" id="section-m-teer">
-  <h2>📊 M-TEER模拟器</h2>
-  <span class="section-count" id="m-teer-count">14 台</span>
+  <!-- T-TEER 实物码 -->
+  <div class="section-divider t-teer">
+    <h3>🏥 T-TEER模拟器</h3>
+    <span class="section-count" id="asset-t-teer-count">2 台</span>
+  </div>
+  <div class="qr-grid" id="asset-grid-t-teer"></div>
+
+  <!-- M-TEER 实物码 -->
+  <div class="section-divider m-teer">
+    <h3>📊 M-TEER模拟器</h3>
+    <span class="section-count" id="asset-m-teer-count">14 台</span>
+  </div>
+  <div class="qr-grid" id="asset-grid-m-teer"></div>
 </div>
-<div class="qr-grid" id="grid-m-teer"></div>
+
+<!-- ========== 第二部分：线上监测码 ========== -->
+<div class="qr-type-section" id="section-monitor">
+  <div class="qr-type-header">
+    <div class="qr-type-icon monitor">📡</div>
+    <div>
+      <div class="qr-type-title">线上监测码</div>
+      <div class="qr-type-desc">不贴在设备上 · 远程查看所有设备实时状态 · 可转发分享</div>
+      <span class="qr-type-tag monitor">每个分类一个 · 线上共享</span>
+    </div>
+  </div>
+
+  <div class="monitor-grid" id="monitor-grid"></div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
@@ -143,30 +215,29 @@ const CATEGORIES = {
   }
 };
 
-function createDevices(catKey) {
-  const cat = CATEGORIES[catKey];
-  const arr = [];
-  for (let i = 1; i <= cat.count; i++) {
-    const num = String(i).padStart(3, "0");
-    arr.push({ id: `${cat.idPrefix}-${num}`, name: `${cat.defaultName} #${i}`, icon: cat.icon });
-  }
-  return arr;
+function getBaseUrl() {
+  let url = document.getElementById("base-url").value.trim();
+  if (!url) url = window.location.href.replace("qr-print.html", "index.html");
+  return url.split("?")[0];
 }
 
-function generateCategory(catKey) {
-  let baseUrl = document.getElementById("base-url").value.trim();
-  if (!baseUrl) baseUrl = window.location.href.replace("qr-print.html", "index.html");
-  baseUrl = baseUrl.split("?")[0];
-
+// 生成实物标签码（每台设备一个，扫码直达检查表单）
+function generateAssetCodes(catKey) {
   const cat = CATEGORIES[catKey];
-  const devices = createDevices(catKey);
-  const grid = document.getElementById(`grid-${catKey}`);
+  const grid = document.getElementById(`asset-grid-${catKey}`);
   grid.innerHTML = "";
 
-  document.getElementById(`${catKey}-count`).textContent = `${devices.length} 台`;
+  const devices = [];
+  for (let i = 1; i <= cat.count; i++) {
+    const num = String(i).padStart(3, "0");
+    devices.push({ id: `${cat.idPrefix}-${num}`, name: `${cat.defaultName} #${i}`, icon: cat.icon });
+  }
+
+  document.getElementById(`asset-${catKey}-count`).textContent = `${devices.length} 台`;
 
   devices.forEach(device => {
-    const url = `${baseUrl}?cat=${catKey}&device=${device.id}`;
+    // 实物标签码：带 action=inspect，扫码直达检查表单
+    const url = `${getBaseUrl()}?cat=${catKey}&device=${device.id}&action=inspect`;
     const card = document.createElement("div");
     card.className = `qr-card ${catKey}`;
     card.innerHTML = `
@@ -174,13 +245,13 @@ function generateCategory(catKey) {
       <div class="qr-device-name">${device.name}</div>
       <div class="qr-device-id">${device.id}</div>
       <span class="qr-cat-label ${catKey}">${cat.label}</span>
-      <div class="qr-code-wrap" id="qr-${device.id}"></div>
+      <div class="qr-code-wrap" id="asset-qr-${device.id}"></div>
       <div class="qr-separator"></div>
-      <div class="qr-hint">扫码查看状态 · 发起检查<br>上传图片 / 视频</div>
+      <div class="qr-hint">🏷️ 实物标签<br>扫码 → 检查表单</div>
     `;
     grid.appendChild(card);
 
-    new QRCode(document.getElementById(`qr-${device.id}`), {
+    new QRCode(document.getElementById(`asset-qr-${device.id}`), {
       text: url,
       width: 140, height: 140,
       colorDark: cat.color,
@@ -190,26 +261,41 @@ function generateCategory(catKey) {
   });
 }
 
-function generateAll() {
-  generateCategory("t-teer");
-  generateCategory("m-teer");
+// 生成线上监测码（每个分类一个，扫码看所有设备状态）
+function generateMonitorCodes() {
+  const grid = document.getElementById("monitor-grid");
+  grid.innerHTML = "";
+
+  Object.values(CATEGORIES).forEach(cat => {
+    // 线上监测码：只带分类参数，进入设备总览
+    const url = `${getBaseUrl()}?cat=${cat.key}`;
+    const card = document.createElement("div");
+    card.className = `monitor-card ${cat.key}`;
+    card.innerHTML = `
+      <div class="qr-device-icon">${cat.icon}</div>
+      <div class="qr-device-name">${cat.label}</div>
+      <div class="qr-device-id">${cat.count} 台设备 · 远程监测</div>
+      <span class="qr-cat-label ${cat.key}">${cat.label}</span>
+      <div class="qr-code-wrap" id="monitor-qr-${cat.key}"></div>
+      <div class="qr-separator"></div>
+      <div class="qr-hint">📡 线上监测码<br>扫码 → 查看所有设备状态<br>可转发分享</div>
+    `;
+    grid.appendChild(card);
+
+    new QRCode(document.getElementById(`monitor-qr-${cat.key}`), {
+      text: url,
+      width: 160, height: 160,
+      colorDark: cat.color,
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  });
 }
 
-function printCategory(catKey) {
-  // 隐藏另一个分类
-  const otherCat = catKey === "t-teer" ? "m-teer" : "t-teer";
-  const otherSection = document.getElementById(`section-${otherCat}`);
-  const otherGrid = document.getElementById(`grid-${otherCat}`);
-  const thisSection = document.getElementById(`section-${catKey}`);
-  const thisGrid = document.getElementById(`grid-${catKey}`);
-
-  otherSection.style.display = "none";
-  otherGrid.style.display = "none";
-
-  window.print();
-
-  otherSection.style.display = "";
-  otherGrid.style.display = "";
+function generateAll() {
+  generateAssetCodes("t-teer");
+  generateAssetCodes("m-teer");
+  generateMonitorCodes();
 }
 
 generateAll();
