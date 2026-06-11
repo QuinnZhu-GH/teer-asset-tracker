@@ -29,69 +29,138 @@
     padding: 4px 12px; border-radius: 14px; font-size: 12px; font-weight: 600;
   }
 
-  /* 设备列表容器 */
-  .device-list { padding: 8px 12px 32px; }
+  /* ===== 总览页 - 地区网格仪表盘 ===== */
+  .dash-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 8px;
+  }
+  @media (min-width: 768px) {
+    .dash-grid { grid-template-columns: repeat(4, 1fr); }
+  }
 
-  /* 设备行 - 极简卡片 */
-  .dev-row {
-    background: white; border-radius: 12px;
-    padding: 14px 16px; margin-bottom: 8px;
-    display: flex; align-items: stretch; gap: 12px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-    cursor: pointer; transition: background 0.12s;
+  /* 地区面板 */
+  .region-panel {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+  }
+  .region-header {
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid transparent;
+  }
+  .region-header .rh-name { display: flex; align-items: center; gap: 5px; }
+  .region-header .rh-manager {
+    font-size: 10px; font-weight: 500; opacity: 0.75;
+    background: rgba(255,255,255,0.4); padding: 1px 5px;
+    border-radius: 6px;
+  }
+  .region-header .rh-count {
+    font-size: 11px; font-weight: 700;
+    background: rgba(0,0,0,0.06); padding: 2px 7px;
+    border-radius: 10px;
+  }
+
+  /* 地区色带 */
+  .region-hd1 .region-header { background: #e6f2ff; color: #1a5fb4; border-bottom-color: #90cdf4; }
+  .region-hd2 .region-header { background: #f0e6ff; color: #613583; border-bottom-color: #d6bcfa; }
+  .region-hz .region-header  { background: #e6fffa; color: #0d7377; border-bottom-color: #81e6d9; }
+  .region-hb .region-header  { background: #fff0e6; color: #9c4221; border-bottom-color: #fbd38d; }
+  .region-hn .region-header  { background: #e6ffed; color: #276749; border-bottom-color: #9ae6b4; }
+  .region-xb .region-header  { background: #fff8e6; color: #975a16; border-bottom-color: #f6e05e; }
+  .region-xn .region-header  { background: #ffe6e6; color: #9b2c2c; border-bottom-color: #feb2b2; }
+
+  .region-devices { padding: 2px 4px; flex: 1; }
+
+  /* 设备芯片 - 极紧凑 */
+  .dev-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 5px;
+    border-bottom: 1px solid #f0f4f8;
+    cursor: pointer;
+    font-size: 11px;
+    min-height: 26px;
     position: relative;
   }
-  .dev-row:active { background: #f7fafc; }
+  .dev-chip:last-child { border-bottom: none; }
+  .dev-chip:hover { background: #f7fafc; }
+  .dev-chip:active { background: #edf2f7; }
 
-  /* 左侧时间线轴 */
-  .dev-tl {
-    display: flex; flex-direction: column; align-items: center;
-    width: 36px; flex-shrink: 0; padding-top: 2px;
+  /* 状态点 - 更醒目 */
+  .st-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0; position: relative;
   }
-  .dev-tl-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    border: 2px solid #cbd5e0; background: white;
-    flex-shrink: 0; position: relative; z-index: 1;
+  .st-dot.ok { background: #48bb78; }
+  .st-dot.error { background: #fc5c7d; }
+  .st-dot.warn { background: #ed8936; }
+  .st-dot.unchecked { background: #cbd5e0; }
+  .st-dot::after {
+    content: ''; position: absolute; inset: -3px;
+    border-radius: 50%; border: 1.5px solid transparent;
   }
-  .dev-tl-dot.ok { border-color: #48bb78; background: #f0fff4; }
-  .dev-tl-dot.warn { border-color: #ed8936; background: #fffaf0; }
-  .dev-tl-dot.error { border-color: #fc5c7d; background: #fff5f5; }
-  .dev-tl-dot.unchecked { border-color: #cbd5e0; background: #f7fafc; }
-  .dev-tl-line {
-    width: 2px; flex: 1; background: #e2e8f0; margin-top: 2px;
-  }
+  .st-dot.ok::after { border-color: rgba(72,187,120,0.35); }
+  .st-dot.error::after { border-color: rgba(252,92,125,0.35); }
+  .st-dot.warn::after { border-color: rgba(237,137,54,0.35); }
 
-  /* 中间主信息 */
-  .dev-main { flex: 1; min-width: 0; }
-  .dev-name {
-    font-size: 15px; font-weight: 700; color: #1a202c;
-    line-height: 1.3; display: flex; align-items: center; gap: 6px;
+  .dev-chip-name {
+    font-weight: 600; color: #1a202c;
+    flex-shrink: 0; font-size: 11px;
   }
-  .dev-id-text { font-size: 12px; color: #a0aec0; font-weight: 400; }
-  .dev-location {
-    font-size: 13px; color: #4a5568; margin-top: 4px;
-    display: flex; align-items: center; gap: 4px;
-  }
-  .dev-last-check {
-    font-size: 11px; color: #a0aec0; margin-top: 2px;
-  }
-
-  /* 右侧次级信息 */
-  .dev-side {
-    display: flex; flex-direction: column; align-items: flex-end;
-    justify-content: center; gap: 4px; flex-shrink: 0;
-  }
-  .dev-side-tag {
-    font-size: 10px; font-weight: 600; padding: 2px 8px;
-    border-radius: 8px; white-space: nowrap;
-  }
-  .dev-side-tag.repair { background: #fff5f5; color: #c53030; }
-  .dev-side-tag.shipping { background: #faf5ff; color: #6b46c1; }
-  .dev-side-tag.warn-status { background: #fffaf0; color: #c05621; }
-  .dev-side-note {
-    font-size: 10px; color: #a0aec0; max-width: 80px;
+  .dev-chip-loc {
+    color: #718096; font-size: 10px;
+    flex: 1; text-align: right;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    text-align: right;
+  }
+
+  /* 跨区/区内 标识 */
+  .xr-badge {
+    font-size: 9px; padding: 1px 4px;
+    border-radius: 4px; font-weight: 600;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .xr-badge.intra { background: #f0fff4; color: #276749; }
+  .xr-badge.cross { background: #fff5f5; color: #c53030; }
+  .xr-badge.warehouse { background: #edf2f7; color: #4a5568; }
+
+  /* 顶部汇总条 */
+  .dash-summary {
+    display: flex; gap: 6px;
+    padding: 8px 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sum-item {
+    background: white;
+    border-radius: 8px;
+    padding: 6px 10px;
+    min-width: 70px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    flex-shrink: 0;
+  }
+  .sum-item .sum-val {
+    font-size: 16px; font-weight: 800; color: #1a202c;
+  }
+  .sum-item .sum-label {
+    font-size: 10px; color: #a0aec0; margin-top: 1px;
+  }
+
+  /* 空状态 */
+  .region-empty {
+    font-size: 11px; color: #a0aec0;
+    text-align: center; padding: 10px 4px;
   }
 
   /* ===== 详情页 - 汇报风格 ===== */
@@ -944,21 +1013,94 @@ const CATEGORIES = {
 };
 
 const DEVICE_PRESETS = {
-  "M-TEER-001": { owner: "张志伟", region: "华东2", location: "济南", status: "保管地", repair: false, note: "" },
-  "M-TEER-002": { owner: "朱俊杰", region: "西北", location: "西安", status: "调用中", repair: false, note: "区内使用中" },
-  "M-TEER-003": { owner: "李仁", region: "华东2", location: "南京", status: "调用中", repair: false, note: "计划跨区调用" },
-  "M-TEER-004": { owner: "杭州办", region: "杭州办", location: "杭州仓库", status: "待维修", repair: true, note: "箱体破损" },
-  "M-TEER-005": { owner: "李兆佳", region: "华南", location: "广州", status: "调用中", repair: false, note: "区内使用中" },
-  "M-TEER-006": { owner: "杭州办", region: "杭州办", location: "杭州仓库", status: "保管地", repair: false, note: "6号模拟器临时组装，箱体老化卡扣损坏，内置支架为白色塑料款，心脏模型瓣叶损坏，仅用于基础演示需求" },
-  "M-TEER-007": { owner: "何子蕙", region: "华东1", location: "杭州仓库", status: "调用中", repair: false, note: "华中区内调用" },
-  "M-TEER-008": { owner: "关万鑫", region: "华东1", location: "上海", status: "调用中", repair: false, note: "" },
-  "M-TEER-009": { owner: "郑兵", region: "西北", location: "乌鲁木齐", status: "保管地", repair: false, note: "" },
-  "M-TEER-010": { owner: "刘贵", region: "华中", location: "合肥", status: "调用中", repair: false, note: "淮北矿工总医院科室会" },
-  "M-TEER-011": { owner: "曹海波", region: "华东1", location: "福建", status: "保管地", repair: false, note: "" },
-  "M-TEER-012": { owner: "胡洋洋", region: "华北", location: "北京", status: "保管地", repair: false, note: "" },
-  "M-TEER-013": { owner: "杭州办", region: "杭州办", location: "杭州仓库", status: "招标", repair: false, note: "13号模拟器仅包含导引鞘和瓣膜夹，建议仅招标调用" },
-  "M-TEER-014": { owner: "王燕", region: "西南", location: "重庆", status: "调用中", repair: true, note: "寄回杭州，CDS维护" }
+  "M-TEER-001": { owner: "张志伟", region: "华东二区", location: "济南", status: "保管地", repair: false, note: "" },
+  "M-TEER-002": { owner: "朱俊杰", region: "西北区", location: "西安", status: "调用中", repair: false, note: "区内使用中" },
+  "M-TEER-003": { owner: "李仁", region: "华东二区", location: "南京", status: "调用中", repair: false, note: "计划跨区调用" },
+  "M-TEER-004": { owner: "杭州办", region: "华东一区", location: "杭州仓库", status: "待维修", repair: true, note: "箱体破损" },
+  "M-TEER-005": { owner: "李兆佳", region: "华南区", location: "广州", status: "调用中", repair: false, note: "区内使用中" },
+  "M-TEER-006": { owner: "杭州办", region: "华东一区", location: "杭州仓库", status: "保管地", repair: false, note: "6号模拟器临时组装，箱体老化卡扣损坏，内置支架为白色塑料款，心脏模型瓣叶损坏，仅用于基础演示需求" },
+  "M-TEER-007": { owner: "何子蕙", region: "华东一区", location: "杭州仓库", status: "调用中", repair: false, note: "华中区内调用" },
+  "M-TEER-008": { owner: "关万鑫", region: "华东一区", location: "上海", status: "调用中", repair: false, note: "" },
+  "M-TEER-009": { owner: "郑兵", region: "西北区", location: "乌鲁木齐", status: "保管地", repair: false, note: "" },
+  "M-TEER-010": { owner: "刘贵", region: "华中区", location: "合肥", status: "调用中", repair: false, note: "淮北矿工总医院科室会" },
+  "M-TEER-011": { owner: "曹海波", region: "华东一区", location: "福建", status: "保管地", repair: false, note: "" },
+  "M-TEER-012": { owner: "胡洋洋", region: "华北区", location: "北京", status: "保管地", repair: false, note: "" },
+  "M-TEER-013": { owner: "杭州办", region: "华东一区", location: "杭州仓库", status: "招标", repair: false, note: "13号模拟器仅包含导引鞘和瓣膜夹，建议仅招标调用" },
+  "M-TEER-014": { owner: "王燕", region: "西南区", location: "重庆", status: "调用中", repair: true, note: "寄回杭州，CDS维护" }
 };
+
+// ============================================================
+// 地区配置（按公司组织架构）
+// ============================================================
+const REGION_CONFIG = {
+  "华东一区": { name: "华东一区", manager: "石蕙", color: "#1a5fb4", bg: "#e6f2ff", border: "#90cdf4" },
+  "华东二区": { name: "华东二区", manager: "孙万霄(代)", color: "#613583", bg: "#f0e6ff", border: "#d6bcfa" },
+  "华中区":   { name: "华中区",   manager: "冯景", color: "#0d7377", bg: "#e6fffa", border: "#81e6d9" },
+  "华北区":   { name: "华北区",   manager: "张媤媪", color: "#9c4221", bg: "#fff0e6", border: "#fbd38d" },
+  "华南区":   { name: "华南区",   manager: "王文韬(代)", color: "#276749", bg: "#e6ffed", border: "#9ae6b4" },
+  "西北区":   { name: "西北区",   manager: "王若仲", color: "#975a16", bg: "#fff8e6", border: "#f6e05e" },
+  "西南区":   { name: "西南区",   manager: "王若仲(鼎)", color: "#9b2c2c", bg: "#ffe6e6", border: "#feb2b2" }
+};
+
+// 位置 → 地区映射（按公司组织架构划分，非纯地理）
+const LOCATION_TO_REGION = {
+  // 华东一区
+  "浙江": "华东一区", "杭州": "华东一区", "宁波": "华东一区", "温州": "华东一区",
+  "上海": "华东一区", "上海市": "华东一区",
+  "福建": "华东一区", "福州": "华东一区", "厦门": "华东一区",
+  // 华东二区
+  "江苏": "华东二区", "南京": "华东二区", "苏州": "华东二区", "无锡": "华东二区",
+  "山东": "华东二区", "济南": "华东二区", "青岛": "华东二区",
+  "华中科技大学同济医学院附属协和医院": "华东二区",
+  // 华中区
+  "河南": "华中区", "郑州": "华中区",
+  "安徽": "华中区", "合肥": "华中区",
+  "湖北": "华中区", "武汉": "华中区",
+  "江西": "华中区", "南昌": "华中区",
+  // 华北区
+  "北京": "华北区", "北京市": "华北区", "天津": "华北区", "河北": "华北区", "石家庄": "华北区",
+  "山西": "华北区", "太原": "华北区",
+  "黑龙江": "华北区", "哈尔滨": "华北区",
+  "吉林": "华北区", "长春": "华北区",
+  "辽宁": "华北区", "沈阳": "华北区", "大连": "华北区",
+  "内蒙古": "华北区", "呼和浩特": "华北区",
+  // 华南区
+  "湖南": "华南区", "长沙": "华南区",
+  "广东": "华南区", "广州": "华南区", "深圳": "华南区",
+  "广西": "华南区", "南宁": "华南区",
+  "海南": "华南区", "海口": "华南区",
+  // 西北区
+  "甘肃": "西北区", "兰州": "西北区",
+  "陕西": "西北区", "西安": "西北区",
+  "宁夏": "西北区", "银川": "西北区",
+  "新疆": "西北区", "乌鲁木齐": "西北区",
+  "青海": "西北区", "西宁": "西北区",
+  // 西南区
+  "云南": "西南区", "昆明": "西南区",
+  "四川": "西南区", "成都": "西南区",
+  "贵州": "西南区", "贵阳": "西南区",
+  "重庆": "西南区", "重庆市": "西南区",
+  "西藏": "西南区", "拉萨": "西南区"
+};
+
+function getRegionFromLocation(loc) {
+  if (!loc) return null;
+  for (const [key, region] of Object.entries(LOCATION_TO_REGION)) {
+    if (loc.includes(key)) return region;
+  }
+  return null;
+}
+
+function isCrossRegion(dev) {
+  if (!dev.region || !dev.location) return false;
+  const locRegion = getRegionFromLocation(dev.location);
+  if (!locRegion) return false;
+  return locRegion !== dev.region;
+}
+
+function isWarehouseDevice(dev) {
+  return dev.owner === "杭州办" || (dev.location && dev.location.includes("仓库"));
+}
 
 let currentCat = null;
 let devices = [];
@@ -1194,7 +1336,7 @@ function getCompVal(v) {
 }
 
 // ============================================================
-// 渲染列表 - 极简时间线风格
+// 渲染列表 - 地区网格仪表盘
 // ============================================================
 function renderDeviceList() {
   const cat = CATEGORIES[currentCat];
@@ -1204,61 +1346,91 @@ function renderDeviceList() {
   document.getElementById("list-title").textContent = `${cat.icon} ${cat.label}`;
   document.getElementById("list-badge").textContent = `${devices.length} 台`;
 
-  // 按位置分组
+  // 按地区分组（优先使用设备的region字段，其次按location推算）
   const groups = {};
+  const regionKeys = Object.keys(REGION_CONFIG);
+  regionKeys.forEach(rk => { groups[rk] = []; });
+
   devices.forEach(d => {
-    const loc = d.location || "未知";
-    if (!groups[loc]) groups[loc] = [];
-    groups[loc].push(d);
+    const regionKey = d.region || getRegionFromLocation(d.location) || "未分配";
+    if (!groups[regionKey]) groups[regionKey] = [];
+    groups[regionKey].push(d);
   });
+
+  // 统计
+  const okCount = devices.filter(d => getStatusClass(d) === "status-ok").length;
+  const errCount = devices.filter(d => getStatusClass(d) === "status-error").length;
+  const warnCount = devices.filter(d => getStatusClass(d) === "status-warn").length;
+  const unchkCount = devices.filter(d => getStatusClass(d) === "status-unchecked").length;
+  const repairCount = devices.filter(d => d.needRepair).length;
+  const crossCount = devices.filter(d => isCrossRegion(d)).length;
 
   const container = document.getElementById("device-list-container");
-  let html = '';
 
-  Object.entries(groups).forEach(([loc, devs]) => {
-    // 位置分组头
-    html += `<div style="padding:16px 4px 6px;font-size:13px;font-weight:700;color:#718096;display:flex;align-items:center;gap:6px">
-      📍 ${loc} <span style="font-size:11px;font-weight:400;color:#a0aec0">${devs.length}台</span>
-    </div>`;
+  // 顶部汇总条
+  let html = `<div class="dash-summary">
+    <div class="sum-item"><div class="sum-val" style="color:#1a202c">${devices.length}</div><div class="sum-label">总计</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#48bb78">${okCount}</div><div class="sum-label">正常</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#fc5c7d">${errCount}</div><div class="sum-label">异常</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#ed8936">${warnCount}</div><div class="sum-label">注意</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#a0aec0">${unchkCount}</div><div class="sum-label">待检</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#c53030">${repairCount}</div><div class="sum-label">待修</div></div>
+    <div class="sum-item"><div class="sum-val" style="color:#6b46c1">${crossCount}</div><div class="sum-label">跨区</div></div>
+  </div>`;
 
-    devs.forEach((d, idx) => {
-      const cls = getStatusClass(d);
-      const dotCls = cls === "status-ok" ? "ok" : cls === "status-error" ? "error" : cls === "status-warn" ? "warn" : "unchecked";
-      const isLast = idx === devs.length - 1;
+  // 地区网格
+  html += `<div class="dash-grid">`;
 
-      // 最后检查时间
-      const lastTime = d.lastCheck ? d.lastCheck.split(' ')[0] || d.lastCheck : '—';
-      // 检查人
-      const lastLog = d.logs && d.logs.length > 0 ? d.logs[d.logs.length - 1] : null;
-      const lastChecker = lastLog ? lastLog.checker : '';
+  regionKeys.forEach(rk => {
+    const cfg = REGION_CONFIG[rk];
+    const devs = groups[rk] || [];
+    const regionClass = `region-${rk === "华东一区" ? "hd1" : rk === "华东二区" ? "hd2" : rk === "华中区" ? "hz" : rk === "华北区" ? "hb" : rk === "华南区" ? "hn" : rk === "西北区" ? "xb" : "xn"}`;
 
-      // 次级信息标签
-      let sideHtml = '';
-      if (d.needRepair) sideHtml += `<span class="dev-side-tag repair">🔧 待维修</span>`;
-      else if (d.shipping && d.shipping.trackingNo) sideHtml += `<span class="dev-side-tag shipping">📦 运输中</span>`;
-      else if (cls === "status-warn") sideHtml += `<span class="dev-side-tag warn-status">⚠️ 注意</span>`;
+    html += `<div class="region-panel ${regionClass}">
+      <div class="region-header">
+        <div class="rh-name">${cfg.name} <span class="rh-manager">${cfg.manager}</span></div>
+        <span class="rh-count">${devs.length}台</span>
+      </div>
+      <div class="region-devices">`;
 
-      // 备注（截断）
-      const noteText = d.statusNote || d.presetNote || '';
-      if (noteText) sideHtml += `<div class="dev-side-note">${noteText}</div>`;
+    if (devs.length === 0) {
+      html += `<div class="region-empty">— 无设备 —</div>`;
+    } else {
+      devs.forEach(d => {
+        const cls = getStatusClass(d);
+        const dotCls = cls === "status-ok" ? "ok" : cls === "status-error" ? "error" : cls === "status-warn" ? "warn" : "unchecked";
 
-      html += `
-        <div class="dev-row" onclick="openDetail('${d.id}')"
-          ontouchstart="handleLongPress('${d.id}')" ontouchend="cancelLongPress()">
-          <div class="dev-tl">
-            <div class="dev-tl-dot ${dotCls}"></div>
-            ${!isLast ? '<div class="dev-tl-line"></div>' : ''}
-          </div>
-          <div class="dev-main">
-            <div class="dev-name">${d.name} <span class="dev-id-text">${d.id}</span></div>
-            <div class="dev-location">📍 ${d.location || '未知'}${d.owner ? ' · 👤 ' + d.owner : ''}</div>
-            <div class="dev-last-check">${lastTime !== '—' ? '🕐 ' + lastTime + (lastChecker ? ' · ' + lastChecker : '') : '⏳ 尚未检查'}</div>
-          </div>
-          <div class="dev-side">${sideHtml}</div>
-        </div>`;
-    });
+        // 区内 / 跨区 / 库存
+        let xrHtml = '';
+        if (isWarehouseDevice(d)) {
+          xrHtml = `<span class="xr-badge warehouse">🏠 总部</span>`;
+        } else if (isCrossRegion(d)) {
+          xrHtml = `<span class="xr-badge cross">↗ 跨区</span>`;
+        } else {
+          xrHtml = `<span class="xr-badge intra">✓ 区内</span>`;
+        }
+
+        // 维修/运输 优先显示
+        let extraHtml = '';
+        if (d.needRepair) extraHtml = `<span style="color:#c53030;font-size:9px;font-weight:600">🔧</span>`;
+        else if (d.shipping && d.shipping.trackingNo) extraHtml = `<span style="color:#6b46c1;font-size:9px;font-weight:600">📦</span>`;
+
+        html += `
+          <div class="dev-chip" onclick="openDetail('${d.id}')"
+            ontouchstart="handleLongPress('${d.id}')" ontouchend="cancelLongPress()">
+            <div class="st-dot ${dotCls}"></div>
+            <span class="dev-chip-name">${d.id.replace(cat.idPrefix + '-', '')}</span>
+            <span class="dev-chip-loc">${d.location || '未知'}</span>
+            ${extraHtml}
+            ${xrHtml}
+          </div>`;
+      });
+    }
+
+    html += `</div></div>`;
   });
 
+  html += `</div>`;
   container.innerHTML = html;
 }
 
