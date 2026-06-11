@@ -481,8 +481,6 @@ const CATEGORIES = {
 // 短时间内固定，后续修改时更新此对象即可
 // 数据来源：D:/模拟器管理状态表.xlsx
 const DEVICE_PRESETS = {
-  "T-TEER-001": { owner: "朱庆媛", region: "杭州", location: "行政仓库", status: "保管地", repair: false, note: "" },
-  "T-TEER-002": { owner: "（待填写）", region: "（待填写）", location: "（待填写）", status: "", repair: false, note: "" },
   "M-TEER-001": { owner: "张志伟", region: "华东2", location: "济南", status: "保管地", repair: false, note: "" },
   "M-TEER-002": { owner: "朱俊杰", region: "西北", location: "西安", status: "调用中", repair: false, note: "区内使用中" },
   "M-TEER-003": { owner: "李仁", region: "华东2", location: "南京", status: "调用中", repair: false, note: "计划跨区调用" },
@@ -521,12 +519,12 @@ function createDefaultDevices(catKey) {
     arr.push({
       id: id,
       name: `${cat.defaultName} #${i}`,
-      model: "（待填写）",
-      sn: "（待填写）",
+      model: "",
+      sn: "",
       icon: cat.icon,
-      location: preset.location || "（待填写）",
-      region: preset.region || "（待填写）",
-      owner: preset.owner || "（待填写）",
+      location: preset.location || "",
+      region: preset.region || "",
+      owner: preset.owner || "",
       useStatus: preset.status || "",
       needRepair: preset.repair || false,
       presetNote: preset.note || "",
@@ -697,11 +695,11 @@ function openDetail(deviceId) {
   document.getElementById("detail-id").textContent = currentDevice.id + " · " + currentCat.toUpperCase().replace("-","-") ;
   document.getElementById("d-assetno").textContent = currentDevice.id;
   document.getElementById("d-category").textContent = cat.shortLabel;
-  document.getElementById("d-model").textContent = currentDevice.model;
-  document.getElementById("d-sn").textContent = currentDevice.sn;
-  document.getElementById("d-region").textContent = currentDevice.region;
-  document.getElementById("d-location").textContent = currentDevice.location;
-  document.getElementById("d-owner").textContent = currentDevice.owner;
+  document.getElementById("d-model").textContent = currentDevice.model || "—";
+  document.getElementById("d-sn").textContent = currentDevice.sn || "—";
+  document.getElementById("d-region").textContent = currentDevice.region || "—";
+  document.getElementById("d-location").textContent = currentDevice.location || "—";
+  document.getElementById("d-owner").textContent = currentDevice.owner || "—";
 
   // 当前状态
   const useStatusMap = {"保管地": "🟢 保管地", "调用中": "🟠 调用中", "待维修": "🔴 待维修", "招标": "🔵 招标", "": "⚪ 未设置"};
@@ -789,7 +787,7 @@ function goToCheckForm() {
   document.getElementById("form-device-name").textContent = currentDevice.name;
   document.getElementById("form-device-id").textContent = currentDevice.id;
   document.getElementById("f-checker").value = "";
-  document.getElementById("f-location").value = currentDevice.location !== "（待填写）" ? currentDevice.location : "";
+  document.getElementById("f-location").value = currentDevice.location || "";
   document.getElementById("f-parts-detail").value = "";
   document.getElementById("f-func-detail").value = "";
   document.getElementById("f-note").value = "";
@@ -861,7 +859,7 @@ async function submitCheck() {
   const logEntry = { time: timeStr, checker, location, partsStatus, partsDetail, funcStatus, funcDetail, nextCheck: nextDate, note, mediaCount: mediaRecords.length };
 
   currentDevice.location = location;
-  currentDevice.owner = currentDevice.owner === "（待填写）" ? checker : currentDevice.owner;
+  currentDevice.owner = currentDevice.owner || checker;
   currentDevice.partsStatus = partsStatus;
   currentDevice.funcStatus = funcStatus;
   currentDevice.lastCheck = timeStr;
